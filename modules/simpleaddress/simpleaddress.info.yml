@@ -1,0 +1,14 @@
+name: Simple Address
+type: module
+description: Defines a simple address field type.
+package: Field types
+# version: VERSION
+# core: 8.x
+dependencies:
+  - field
+
+# Information added by Drupal.org packaging script on 2016-06-12
+version: '8.x-1.x-dev'
+core: '8.x'
+project: 'simpleaddress'
+datestamp: 1465755540

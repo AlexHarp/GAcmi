@@ -1,0 +1,8 @@
+name: Json entity renderer
+type: module
+description: for better json view renderings
+core: 8.x
+package: Geoscience Australia
+dependencies:
+  - rest
+

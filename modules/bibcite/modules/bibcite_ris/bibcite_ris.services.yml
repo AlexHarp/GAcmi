@@ -1,0 +1,14 @@
+services:
+  bibcite_ris.encoder.ris:
+    class: Drupal\bibcite_ris\Encoder\RISEncoder
+    tags:
+      - { name: encoder, format: ris }
+  bibcite_ris.normalizer.reference:
+    class: Drupal\bibcite_ris\Normalizer\RISReferenceNormalizer
+    tags:
+      - { name: normalizer, priority: 30 }
+    arguments: ['@entity.manager', '@config.factory']
+  bibcite_ris.ris_subscriber:
+    class: Drupal\bibcite_ris\EventSubscriber\RisSubscriber
+    tags:
+      - { name: event_subscriber }

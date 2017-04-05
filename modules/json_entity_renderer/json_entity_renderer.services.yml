@@ -1,0 +1,4 @@
+services:
+  plugin.manager.rest:
+    class: Drupal\rest\Plugin\Type\ResourcePluginManager
+    arguments: ['@container.namespaces', '@cache.discovery', '@module_handler']

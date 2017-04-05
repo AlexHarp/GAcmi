@@ -1,0 +1,6 @@
+name: A test module
+type: module
+description: A test
+core: 8.x
+package: Didymo Designs
+
