@@ -29,7 +29,7 @@ class DataHydroidRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  protected $usesFields = TRUE;
+  protected $usesFields = FALSE;
 
   /**
    * Stores an array of prepared field aliases from options.
@@ -98,22 +98,25 @@ class DataHydroidRow extends RowPluginBase {
    */
   public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
     parent::init($view, $display, $options);
-$varDat = get_class_vars(get_class($this));
+/*$varDat = get_class_vars(get_class($this));
 foreach($varDat as $varTit => $varTitle){
  // dpm($varTit, "variable title");
-}
+}*/
 //dpm(get_defined_vars(), "defined vars");
 //dpm($types, "type data");
 //dpm($this->display, "display data");
-//dpm($this->options, "options data");
-    if (!empty($this->options['field_options'])) {
-      $options = (array) $this->options['field_options'];
+dpm($this->options, "options data");
+//dpm($options);
+ //   if (!empty($this->options['hydroid_options'])) {
+      $options = (array) $this->options['hydroid_options'];
       // Prepare a trimmed version of replacement aliases.
-      $aliases = static::extractFromOptionsArray('alias', $options);
-      $this->replacementAliases = array_filter(array_map('trim', $aliases));
-      // Prepare an array of raw output field options.
+      $this->replacementAliases = static::extractFromOptionsArray('rootType', $options);
+      dpm($this->replacementAliases, "aliases");
+      dpm($options, "post options");
+//    this->replacementAliases = array_filter(array_map('trim', $aliases));
+      // Pre pare an array of raw output field options.
      // $this->rawOutputOptions = static::extractFromOptionsArray('raw_output', $options);
-    }
+   // }
   }
 
   /**
@@ -121,7 +124,7 @@ foreach($varDat as $varTit => $varTitle){
    */
   protected function defineOptions() {
     $options = parent::defineOptions();
-    $options['field_options'] = ['default' => []];
+    $options['hydroid_options'] = ['default' => []];
 
     return $options;
   }
@@ -136,38 +139,36 @@ foreach($varDat as $varTit => $varTitle){
 foreach($GLOBALS["GLOBALS"] as $varTit => $varTitle){
   dpm($GLOBALS, "variable title3");
 }*/
-$varDat = get_class_vars(get_class($this));
-foreach($varDat as $varTit => $varTitle){
+//$varDat = get_class_vars(get_class($this));
+//foreach($varDat as $varTit => $varTitle){
  // dpm($varTit, "variable title");
-}
-dpm($this->view);
-    $form['field_options'] = [
+//}
+//dpm($this->view);//for each it1
+dpm("we are building the form");
+    $form['hydroid_options'] = [
       '#type' => 'table',
-      '#header' => [$this->t('Root node'), $this->t('Alias')],
+      '#header' => [$this->t('Root node')],/* $this->t('Alias')],*/
       '#empty' => $this->t('You have no fields. Add some to your view.'),
       '#tree' => TRUE,
     ];
 
-    $options = $this->options['field_options'];
+    $options = $this->options['hydroid_options'];
 
-    if ($fields = $this->view->display_handler->getOption('fields')) {
+    /*if ($fields = $this->view->display_handler->getOption('fields')) {
       foreach ($fields as $id => $field) {
         // Don't show the field if it has been excluded.
         if (!empty($field['exclude'])) {
           continue;
         }
-        $form['field_options'][$id]['field'] = [
+        i/*$form['field_options'][$id]['field'] = [
           '#markup' => $id,
-        ];	
-        $form['field_options'][$id]['alias'] = [
-          '#title' => $this->t('Alias for @id', ['@id' => $id]),
+        ];*/	
+        $form['hydroid_options']['rootType'] = [
+          '#title' => $this->t('Content type to treat as root'),
           '#title_display' => 'invisible',
           '#type' => 'select',
-	  '#options' => array(
-      	    '' => t('<Any>'),
-            'USD' => 'USD',
-      	    'EUR' => 'Euro'
-    	  ),
+	  '#options' => node_type_get_names(),
+	  //'#default_value' => isset($options[$id]['aliasqf']) ? $options[$id]['aliasqf'] : '',
 	  '#multiple' => 'FALSE',
 	  '#size' => '0',
         ];
@@ -177,8 +178,11 @@ dpm($this->view);
           '#type' => 'checkbox',
           '#default_value' => isset($options[$id]['raw_output']) ? $options[$id]['raw_output'] : '',
         ];*/
-      }
-    }
+      //}
+    
+  }
+  public function getRootType(){
+    return $this->options;
   }
   /**
    * {@inheritdoc}
@@ -221,6 +225,24 @@ dpm($this->view);
   public function query() {
     parent::query();
     $this->getEntityTranslationRenderer()->query($this->view->getQuery());
+  }
+
+  
+  /**
+   * Extracts a set of option values from a nested options array.
+   *
+   * @param string $key
+   *   The key to extract from each array item.
+   * @param array $options
+   *   The options array to return values from.
+   *
+   * @return array
+   *   A regular one dimensional array of values.
+   */
+  protected static function extractFromOptionsArray($key, $options) {
+    return array_map(function($item) use ($key) {
+      return isset($item[$key]) ? $item[$key] : NULL;
+    }, $options);
   }
 
 }

@@ -55,6 +55,9 @@ class NestedSerializer extends Serializer
      */
     public function render() {
 	$render = parent::render();
+	//dpm($this->view->display_handler, "Display handler");
+dpm($this->view->display_handler->getOption('fields'), "fields");
+dpm($this->view->rowPlugin->getRootType(), "root type");
         $oldRender = $render;
         $debugflag = false;
         // Add separator definition so Microsoft Word would know how to open the csv
@@ -129,7 +132,7 @@ class NestedSerializer extends Serializer
           $render = preg_replace(array('/\{\"nid\"/'), "\n\n" . '{"nid"', $render); //hydroid2 spacing
           $render = preg_replace(array('/,\"/'), ",\n\"", $render); //hydroid2 spacing
         }
-        dpm($oldRender, "older Render");
+        //dpm($oldRender, "older Render");
 	$retStr = rtrim($retStr,", ");
 	$retStr .= "]";
         return $retStr;
