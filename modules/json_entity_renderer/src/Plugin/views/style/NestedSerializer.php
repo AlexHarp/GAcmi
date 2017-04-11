@@ -25,6 +25,28 @@ use Drupal\views\Views;
  */
 class NestedSerializer extends Serializer
 {
+  protected $contextArg;
+public function query() {
+  parent::query();
+  if (isset($this->view->rowPlugin)) {
+    dpm($this->view->rowPlugin->query(), "pre-query exe");
+  }
+foreach($this->view as $vkey => $vcontent)
+  dpm($vkey, "new vkey");
+
+
+//dpm($this->view, "unfortunatly this is the view");
+dpm($this->view->args, "arg");
+$this->view->query->where = [];
+}
+
+public function preRender($result) {
+dpm($this->view->args,"render args");
+    if (!empty($this->view->rowPlugin)) {
+      $this->view->rowPlugin->preRender($result);
+   }
+dpm($result, "result = ");
+  }
     private function expand(&$nodeMap, $expandId){
       //dpm($expandId, "entered expand ID");
       $retStr = "";
@@ -56,7 +78,7 @@ class NestedSerializer extends Serializer
     public function render() {
 	$render = parent::render();
 	//dpm($this->view->display_handler, "Display handler");
-dpm($this->view->display_handler->getOption('fields'), "fields");
+//dpm($this->view->display_handler->getOption('fields'), "fields");
 dpm($this->view->rowPlugin->getRootType(), "root type");
         $oldRender = $render;
         $debugflag = false;
@@ -117,13 +139,23 @@ dpm($this->view->rowPlugin->getRootType(), "root type");
           $retStr .= "\n\n\n\n".$renderSplits[$c];
         }
 //	dpm($nodeMap["
-	//dpm($nodeMap, "node map");
+//	dpm($nodeMap, "node map");
 //expand nodes
 	//do this better
 	$retStr = "[";
 	foreach($nodeMap as &$node){
-	  $expandNid = sscanf($node[0], "{\"nid\":[{\"value\":%d");
-	  $retStr .= $this->expand($nodeMap, $expandNid[0]);
+          if(preg_match('/\"type\":\[\{\"target_id\":\"(\w+)/', $node[1], $matches)){
+	    if(!strcmp($matches[1], $this->view->rowPlugin->getRootType())){
+              //$retStr .= "\n\nOPENING ON " . $matches[1] . "\n\n";
+	      $expandNid = sscanf($node[0], "{\"nid\":[{\"value\":%d");
+	      if($this->view->args[0]){
+	        if($this->view->args[0] == $expandNid[0])
+		  $retStr .= $this->expand($nodeMap, $expandNid[0]);
+              } else {
+		$retStr .= $this->expand($nodeMap, $expandNid[0]);
+              }
+            }
+          }
 	}
         //******** debug
         if($debugflag){
@@ -137,4 +169,13 @@ dpm($this->view->rowPlugin->getRootType(), "root type");
 	$retStr .= "]";
         return $retStr;
     }
+
+
+  /**
+  * @implements hook_views_pre_view().
+  */
+  function hook_views_pre_view($view, $display_id, &$args){
+    dpm("testing render hook");
+  }
+
 }

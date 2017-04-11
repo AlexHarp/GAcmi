@@ -20,7 +20,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   id = "data_hydroid",
  *   title = @Translation("Hydroid Entities"),
  *   help = @Translation("Use entites as row data."),
- *   display_types = {"data"}
  * )
  */
 class DataHydroidRow extends RowPluginBase {
@@ -107,16 +106,16 @@ foreach($varDat as $varTit => $varTitle){
 //dpm($this->display, "display data");
 dpm($this->options, "options data");
 //dpm($options);
- //   if (!empty($this->options['hydroid_options'])) {
+   if (!empty($this->options['hydroid_options'])) {
       $options = (array) $this->options['hydroid_options'];
       // Prepare a trimmed version of replacement aliases.
-      $this->replacementAliases = static::extractFromOptionsArray('rootType', $options);
+     /* $this->replacementAliases = static::extractFromOptionsArray('rootType', $options);
       dpm($this->replacementAliases, "aliases");
-      dpm($options, "post options");
+      dpm($options, "post options");*/
 //    this->replacementAliases = array_filter(array_map('trim', $aliases));
       // Pre pare an array of raw output field options.
      // $this->rawOutputOptions = static::extractFromOptionsArray('raw_output', $options);
-   // }
+    }
   }
 
   /**
@@ -124,7 +123,7 @@ dpm($this->options, "options data");
    */
   protected function defineOptions() {
     $options = parent::defineOptions();
-    $options['hydroid_options'] = ['default' => []];
+    $options['field_options'] = ['default' => []];
 
     return $options;
   }
@@ -145,14 +144,14 @@ foreach($GLOBALS["GLOBALS"] as $varTit => $varTitle){
 //}
 //dpm($this->view);//for each it1
 dpm("we are building the form");
-    $form['hydroid_options'] = [
+    /*$form['hydroid_options'] = [
       '#type' => 'table',
       '#header' => [$this->t('Root node')],/* $this->t('Alias')],*/
-      '#empty' => $this->t('You have no fields. Add some to your view.'),
+      /*'#empty' => $this->t('You have no fields. Add some to your view.'),
       '#tree' => TRUE,
-    ];
+    ];*/
 
-    $options = $this->options['hydroid_options'];
+    //$options = $this->options['hydroid_options'];
 
     /*if ($fields = $this->view->display_handler->getOption('fields')) {
       foreach ($fields as $id => $field) {
@@ -163,12 +162,12 @@ dpm("we are building the form");
         i/*$form['field_options'][$id]['field'] = [
           '#markup' => $id,
         ];*/	
-        $form['hydroid_options']['rootType'] = [
+        $form['rootType'] = [
           '#title' => $this->t('Content type to treat as root'),
-          '#title_display' => 'invisible',
+          //'#title_display' => 'invisible',
           '#type' => 'select',
 	  '#options' => node_type_get_names(),
-	  //'#default_value' => isset($options[$id]['aliasqf']) ? $options[$id]['aliasqf'] : '',
+	  '#default_value' => 'defaultVal',
 	  '#multiple' => 'FALSE',
 	  '#size' => '0',
         ];
@@ -182,12 +181,19 @@ dpm("we are building the form");
     
   }
   public function getRootType(){
-    return $this->options;
+    $keys = array_keys($this->options['rootType']);
+    return $this->options['rootType'][$keys[0]];
   }
   /**
    * {@inheritdoc}
    */
   public function render($row) {
+    /*  return [
+      '#theme' => $this->themeFunctions(),
+      '#view' => $this->view,
+      '#options' => $this->options,
+      '#row' => $row,
+    ];-*/
     return $this->getEntityTranslation($row->_entity, $row);
   }
 
@@ -222,7 +228,7 @@ dpm("we are building the form");
   /**
    * {@inheritdoc}
    */
-  public function query() {
+ public function query() {
     parent::query();
     $this->getEntityTranslationRenderer()->query($this->view->getQuery());
   }
