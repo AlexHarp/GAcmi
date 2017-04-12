@@ -31,21 +31,6 @@ class DataHydroidRow extends RowPluginBase {
   protected $usesFields = FALSE;
 
   /**
-   * Stores an array of prepared field aliases from options.
-   *
-   * @var array
-   */
-  protected $replacementAliases = [];
-
-  /**
-   * Stores an array of options to determine if the raw field output is used.
-   *
-   * @var array
-   */
-  protected $rawOutputOptions = [];
-
-  protected $custFieldOptions = [];
-  /**
    * {@inheritdoc}
    */
   protected $usesOptions = TRUE;
@@ -92,29 +77,14 @@ class DataHydroidRow extends RowPluginBase {
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static($configuration, $plugin_id, $plugin_definition, $container->get('entity.manager'), $container->get('language_manager'));
   }
+
    /**
    * {@inheritdoc}
    */
   public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
     parent::init($view, $display, $options);
-/*$varDat = get_class_vars(get_class($this));
-foreach($varDat as $varTit => $varTitle){
- // dpm($varTit, "variable title");
-}*/
-//dpm(get_defined_vars(), "defined vars");
-//dpm($types, "type data");
-//dpm($this->display, "display data");
-dpm($this->options, "options data");
-//dpm($options);
-   if (!empty($this->options['hydroid_options'])) {
+    if (!empty($this->options['hydroid_options'])) {
       $options = (array) $this->options['hydroid_options'];
-      // Prepare a trimmed version of replacement aliases.
-     /* $this->replacementAliases = static::extractFromOptionsArray('rootType', $options);
-      dpm($this->replacementAliases, "aliases");
-      dpm($options, "post options");*/
-//    this->replacementAliases = array_filter(array_map('trim', $aliases));
-      // Pre pare an array of raw output field options.
-     // $this->rawOutputOptions = static::extractFromOptionsArray('raw_output', $options);
     }
   }
 
@@ -134,34 +104,6 @@ dpm($this->options, "options data");
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
-/*$varDat = get_defined_vars();
-foreach($GLOBALS["GLOBALS"] as $varTit => $varTitle){
-  dpm($GLOBALS, "variable title3");
-}*/
-//$varDat = get_class_vars(get_class($this));
-//foreach($varDat as $varTit => $varTitle){
- // dpm($varTit, "variable title");
-//}
-//dpm($this->view);//for each it1
-dpm("we are building the form");
-    /*$form['hydroid_options'] = [
-      '#type' => 'table',
-      '#header' => [$this->t('Root node')],/* $this->t('Alias')],*/
-      /*'#empty' => $this->t('You have no fields. Add some to your view.'),
-      '#tree' => TRUE,
-    ];*/
-
-    //$options = $this->options['hydroid_options'];
-
-    /*if ($fields = $this->view->display_handler->getOption('fields')) {
-      foreach ($fields as $id => $field) {
-        // Don't show the field if it has been excluded.
-        if (!empty($field['exclude'])) {
-          continue;
-        }
-        i/*$form['field_options'][$id]['field'] = [
-          '#markup' => $id,
-        ];*/	
         $form['rootType'] = [
           '#title' => $this->t('Content type to treat as root'),
           //'#title_display' => 'invisible',
@@ -171,29 +113,17 @@ dpm("we are building the form");
 	  '#multiple' => 'FALSE',
 	  '#size' => '0',
         ];
-        /*$form['field_options'][$id]['raw_output'] = [
-          '#title' => $this->t('Raw output for @id', ['@id' => $id]),
-          '#title_display' => 'invisible',
-          '#type' => 'checkbox',
-          '#default_value' => isset($options[$id]['raw_output']) ? $options[$id]['raw_output'] : '',
-        ];*/
-      //}
-    
   }
+
   public function getRootType(){
     $keys = array_keys($this->options['rootType']);
     return $this->options['rootType'][$keys[0]];
   }
+
   /**
    * {@inheritdoc}
    */
   public function render($row) {
-    /*  return [
-      '#theme' => $this->themeFunctions(),
-      '#view' => $this->view,
-      '#options' => $this->options,
-      '#row' => $row,
-    ];-*/
     return $this->getEntityTranslation($row->_entity, $row);
   }
 

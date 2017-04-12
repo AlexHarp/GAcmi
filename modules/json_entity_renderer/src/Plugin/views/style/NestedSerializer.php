@@ -26,44 +26,31 @@ use Drupal\views\Views;
 class NestedSerializer extends Serializer
 {
   protected $contextArg;
-public function query() {
-  parent::query();
-  if (isset($this->view->rowPlugin)) {
-    dpm($this->view->rowPlugin->query(), "pre-query exe");
-  }
-foreach($this->view as $vkey => $vcontent)
-  dpm($vkey, "new vkey");
+  
+    public function query() {
+      parent::query();
+      $this->view->query->where = [];//remove the contextual filter so we can still grab all for recursion
+    }
 
-
-//dpm($this->view, "unfortunatly this is the view");
-dpm($this->view->args, "arg");
-$this->view->query->where = [];
-}
-
-public function preRender($result) {
-dpm($this->view->args,"render args");
-    if (!empty($this->view->rowPlugin)) {
-      $this->view->rowPlugin->preRender($result);
-   }
-dpm($result, "result = ");
-  }
+    public function preRender($result) {
+      if (!empty($this->view->rowPlugin)) {
+        $this->view->rowPlugin->preRender($result);
+      }
+    }
+  
     private function expand(&$nodeMap, $expandId){
-      //dpm($expandId, "entered expand ID");
       $retStr = "";
       $expandCount = 0;
       foreach($nodeMap[$expandId] as &$row){
 	if(preg_match('/%&\d+%&$/', $row)){
 	   $row = substr($row, 2);
-	   //dpm($row, "row");
 	   $nid = sscanf($row, "%d");
-	   //dpm($nid);
            if($expandCount > 0) //add comment if an expand is before it
 	     $row = ",";
            else
 	     $row = "";
 	   $row .= rtrim($this->expand($nodeMap, $nid[0]),","); //if single expand we need to kill the tail comma of te node
 	   $expandCount++;
-           //dpm($row, "Row after:");
 	   $retStr .= $row;
    	} else {
 	  $retStr .=$row;
@@ -72,14 +59,12 @@ dpm($result, "result = ");
       }
       return $retStr;
     }
+
     /**
      * {@inheritdoc}
      */
     public function render() {
 	$render = parent::render();
-	//dpm($this->view->display_handler, "Display handler");
-//dpm($this->view->display_handler->getOption('fields'), "fields");
-dpm($this->view->rowPlugin->getRootType(), "root type");
         $oldRender = $render;
         $debugflag = false;
         // Add separator definition so Microsoft Word would know how to open the csv
@@ -91,16 +76,8 @@ dpm($this->view->rowPlugin->getRootType(), "root type");
           $render = preg_replace(array('/\}\]\",/'), '}],', $render); //end of sub array }]", -> }],
         }
         $render = preg_replace(array('/\]\"\},/'), ']},', $render); //end of root array ]"}, -> ]},
-        //$render = preg_replace(array("/\Q\u0022\E/"), '"', $render); // stringified " marks
-        //dpm("alex we reached here");
-        //$renderSplits = preg_split('/(\{\"target_id\":\d+?,\"target_type\":\"node\".*?\"\})/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
         $renderSplits = preg_split('/(\{\"target_id\":\d+?,\"target_type\":\"node\".*?\"\}|\{\"nid\":\[\{"value\":\d+\})/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
-        //$renderSplits = preg_split(array('/":\[\{"tattttrget_id":\d+?,"target_type":"node".*?"\}\]/'), $render, -1);
         $retStr = "";
-        //dpm("upate");
-        //dpm(sizeof($renderSplits), "size of");
-        //dpm($renderSplits, "render splits");
-        //dpm("(\":\[\{\"target_id\":\d+?,\"target_type\":\"node\".*?\"\}\])");
 //Build node map
 	$nodeMap = array();
 	$nodeStartIndex = -1;
@@ -118,35 +95,27 @@ dpm($this->view->rowPlugin->getRootType(), "root type");
             $renderSplits[$c] = $nid[0];
           }  
 	  if(!strncmp($renderSplits[$c], "{\"nid\":[{\"value\":", 17)){
-//dpm($renderSplits[$c], "strcmp nid");
  	    if($nodeStartIndex == -1){
 	      $currNode = sscanf($renderSplits[$c], "{\"nid\":[{\"value\":%d");
               $nodeContents[] = $renderSplits[$c];
 	      $nodeStartIndex = 1; //[1] as [0]m == {
-//dpm($currNode, "init nid");
 	    } else {
-//$dpm($currNode, "currNode");
-//$dpm($nodeContents, "node str mapping");
 	      $nodeMap[$currNode[0]] = $nodeContents;
 	      $currNode = sscanf($renderSplits[$c], "{\"nid\":[{\"value\":%d");
 	      $nodeContents = array();
               $nodeContents[] = $renderSplits[$c];
-//wont find last node
+//wont find last node ?? is this still a thing
 	    }
 	  } else {
             $nodeContents[] = $renderSplits[$c];
 	  }
           $retStr .= "\n\n\n\n".$renderSplits[$c];
         }
-//	dpm($nodeMap["
-//	dpm($nodeMap, "node map");
 //expand nodes
-	//do this better
 	$retStr = "[";
 	foreach($nodeMap as &$node){
           if(preg_match('/\"type\":\[\{\"target_id\":\"(\w+)/', $node[1], $matches)){
 	    if(!strcmp($matches[1], $this->view->rowPlugin->getRootType())){
-              //$retStr .= "\n\nOPENING ON " . $matches[1] . "\n\n";
 	      $expandNid = sscanf($node[0], "{\"nid\":[{\"value\":%d");
 	      if($this->view->args[0]){
 	        if($this->view->args[0] == $expandNid[0])
@@ -164,18 +133,8 @@ dpm($this->view->rowPlugin->getRootType(), "root type");
           $render = preg_replace(array('/\{\"nid\"/'), "\n\n" . '{"nid"', $render); //hydroid2 spacing
           $render = preg_replace(array('/,\"/'), ",\n\"", $render); //hydroid2 spacing
         }
-        //dpm($oldRender, "older Render");
 	$retStr = rtrim($retStr,", ");
 	$retStr .= "]";
         return $retStr;
     }
-
-
-  /**
-  * @implements hook_views_pre_view().
-  */
-  function hook_views_pre_view($view, $display_id, &$args){
-    dpm("testing render hook");
-  }
-
 }
