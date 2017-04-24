@@ -1,0 +1,41 @@
+# Main tab set.
+entity.module_builder_module.collection:
+  title: 'List'
+  route_name: entity.module_builder_module.collection
+  base_route: entity.module_builder_module.collection
+
+module_builder.settings:
+  title: 'Settings'
+  route_name: module_builder.settings
+  base_route: entity.module_builder_module.collection
+
+module_builder.process:
+  title: 'Process data'
+  route_name: module_builder.process
+  base_route: entity.module_builder_module.collection
+
+# Tabs on a single component.
+entity.module_builder_module.edit_form:
+  title: 'Name'
+  route_name: entity.module_builder_module.edit_form
+  base_route: entity.module_builder_module.edit_form
+
+entity.module_builder_module.hooks_form:
+  title: 'Hooks'
+  route_name: entity.module_builder_module.hooks_form
+  base_route: entity.module_builder_module.edit_form
+
+entity.module_builder_module.plugins_form:
+  title: 'Plugins'
+  route_name: entity.module_builder_module.plugins_form
+  base_route: entity.module_builder_module.edit_form
+
+entity.module_builder_module.misc_form:
+  title: 'Misc'
+  route_name: entity.module_builder_module.misc_form
+  base_route: entity.module_builder_module.edit_form
+
+entity.module_builder_module.generate_form:
+  title: 'Generate code'
+  route_name: entity.module_builder_module.generate_form
+  base_route: entity.module_builder_module.edit_form

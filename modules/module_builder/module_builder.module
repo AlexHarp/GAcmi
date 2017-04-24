@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Builds scaffolding for custom modules.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function module_builder_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.module_builder':
+      return t("Module builder allows you to generate code files for new custom modules.");
+    case 'entity.module_builder_module.collection':
+      return t('This page allows you to generate the files for a custom module with scaffolding code for hook implementations, plugins, and so on.');
+  }
+}

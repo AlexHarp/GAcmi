@@ -1,0 +1,79 @@
+module_builder.settings:
+  path: '/admin/config/development/module_builder/settings'
+  defaults:
+    _form: '\Drupal\module_builder\Form\SettingsForm'
+    _title: 'Module Builder settings'
+  requirements:
+    _permission: 'create modules'
+
+module_builder.process:
+  path: '/admin/config/development/module_builder/process'
+  defaults:
+    _form: '\Drupal\module_builder\Form\ProcessForm'
+    _title: 'Process data'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.collection:
+  path: '/admin/config/development/module_builder'
+  defaults:
+    _entity_list: 'module_builder_module'
+    _title: 'Module Builder'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.add_form:
+  path: '/admin/config/development/module_builder/add'
+  defaults:
+    _entity_form: 'module_builder_module'
+    _title: 'Add module'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.edit_form:
+  path: '/admin/config/development/module_builder/manage/{module_builder_module}'
+  defaults:
+    _entity_form: 'module_builder_module.default'
+    _title: 'Edit module'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.hooks_form:
+  path: '/admin/config/development/module_builder/manage/{module_builder_module}/hooks'
+  defaults:
+    _entity_form: 'module_builder_module.hooks'
+    _title: 'Edit hooks'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.plugins_form:
+  path: '/admin/config/development/module_builder/manage/{module_builder_module}/plugins'
+  defaults:
+    _entity_form: 'module_builder_module.plugins'
+    _title: 'Edit plugins'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.misc_form:
+  path: '/admin/config/development/module_builder/manage/{module_builder_module}/misc'
+  defaults:
+    _entity_form: 'module_builder_module.misc'
+    _title: 'Edit miscellaneous components'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.generate_form:
+  path: '/admin/config/development/module_builder/manage/{module_builder_module}/generate'
+  defaults:
+    _entity_form: 'module_builder_module.generate'
+    _title: 'Generate code'
+  requirements:
+    _permission: 'create modules'
+
+entity.module_builder_module.delete_form:
+  path: '/admin/config/development/module_builder/manage/{module_builder_module}/delete'
+  defaults:
+    _entity_form: 'module_builder_module.delete'
+    _title: 'Delete module'
+  requirements:
+    _permission: 'create modules'
