@@ -1,0 +1,23 @@
+field.field_settings.taxonomy_compound_field_Taxonomy_compund:
+  type: mapping
+  label: 'FIELDNAME settings'
+  mapping:
+    size:
+      type: string
+      label: 'Size'
+
+field.formatter.settings.taxonomy_compound_formatter:
+  type: mapping
+  label: 'FORMATTER NAME text length'
+  mapping:
+    text_length:
+      type: string
+      label: 'Text Length'
+
+field.widget.settings.taxonomy_compound_widget:
+  type: mapping
+  label: 'WIDGET NAME widget settings'
+  mapping:
+    size:
+      type: integer
+      label: 'Size'

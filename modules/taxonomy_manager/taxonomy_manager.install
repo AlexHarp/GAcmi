@@ -16,6 +16,11 @@ function taxonomy_manager_install() {
  * Implements hook_uninstall().
  */
 function taxonomy_manager_uninstall() {
-    \Drupal::config('taxonomy_manager.settings')->clear('taxonomy_manager_pager_tree_page_size')->save();
-    drupal_set_message(t("Taxonomy manager module has been uninstalled successfully."), "status");
+//    \Drupal::config('taxonomy_manager.settings')->clear('taxonomy_manager_pager_tree_page_size')->save();
+  //  drupal_set_message(t("Taxonomy manager module has been uninstalled successfully."), "status");
+
+
+
+Drupal::configFactory()->getEditable('taxonomy_manager.settings')->clear('taxonomy_manager_pager_tree_page_size')->save();
+	drupal_set_message(t("Taxonomy manager module has been uninstalled successfully."), "status");
 }
