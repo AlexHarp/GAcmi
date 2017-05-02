@@ -1,0 +1,6 @@
+global-styling:
+  version: VERSION
+  css:
+    component:
+      css/components/ga-site-branding.css: {}
+
