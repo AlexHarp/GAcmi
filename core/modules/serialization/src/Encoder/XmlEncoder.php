@@ -55,7 +55,9 @@ class XmlEncoder implements EncoderInterface, DecoderInterface {
    * {@inheritdoc}
    */
   public function encode($data, $format, array $context = []){
-    return $this->getBaseEncoder()->encode($data, $format, $context);
+    $ret =  $this->getBaseEncoder()->encode($data, $format, $context);
+    //dpm($ret, "xmlEncoder ser");
+    return $ret;
   }
 
   /**
