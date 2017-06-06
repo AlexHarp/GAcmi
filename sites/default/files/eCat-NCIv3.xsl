@@ -181,7 +181,7 @@
 						</cit:title>
 						<cit:date>
 							<cit:CI_Date>
-								<xsl:variable name="pub" select="field_publishing_time_frame" />
+								<xsl:variable name="pub" select="field_publishing_time_frame/value" />
 								<cit:date>
 									<gco:DateTime>
 										<xsl:value-of
@@ -221,7 +221,7 @@
 								</mcc:codeSpace>
 							</mcc:MD_Identifier>
 						</cit:identifier>
-						<xsl:apply-templates select="field_principal_contributors/div/ol/li" />
+						<xsl:apply-templates select="field_authors" />
 						<cit:citedResponsibleParty>
 							<xsl:apply-templates select="	field_contact" />
 						</cit:citedResponsibleParty>
@@ -378,7 +378,7 @@
 						</mco:useConstraints>
 
 						<xsl:choose>
-							<xsl:when test="not(string(field_license/a))">
+							<xsl:when test="not(string(field_license))">
 								<mco:otherConstraints gco:nilReason="missing">
 									<gco:CharacterString />
 								</mco:otherConstraints>
@@ -386,7 +386,7 @@
 							<xsl:otherwise>
 								<mco:otherConstraints>
 									<gco:CharacterString>
-                                <xsl:value-of select="string(field_license/a)" />
+                                <xsl:value-of select="string(field_license)" />
                             </gco:CharacterString>
 								</mco:otherConstraints>
 							</xsl:otherwise>
@@ -400,7 +400,7 @@
 					<mco:MD_SecurityConstraints>
 						<mco:classification>
 							<xsl:variable name="stype"
-								select="string(Security-classification/a)" />
+								select="string(Security-classification)" />
 							<mco:MD_ClassificationCode
 								codeList="codeListLocation#MD_ClassificationCode" codeListValue="{$stype}" />
 						</mco:classification>
@@ -466,29 +466,6 @@
 									<xsl:apply-templates select="field_distribution_entity" />
 
 								</mrd:distributorContact>
-
-								<!-- Temporary hard-code -->
-
-								<mrd:distributorTransferOptions>
-									<mrd:MD_DigitalTransferOptions>
-										<mrd:onLine>
-											<cit:CI_OnlineResource>
-												<cit:linkage>
-													<gco:CharacterString>file://g/data2/fj7/Copernicus/Sentinel-1</gco:CharacterString>
-												</cit:linkage>
-												<cit:protocol>
-													<gco:CharacterString>WWW:LINK-1.0-http--link</gco:CharacterString>
-												</cit:protocol>
-												<cit:name>
-													<gco:CharacterString>Copernicus Australia Hub Sentinel-1 Data Directory</gco:CharacterString>
-												</cit:name>
-												<cit:description>
-													<gco:CharacterString>Copernicus Australia Hub Sentinel-1 Data Directory</gco:CharacterString>
-												</cit:description>
-											</cit:CI_OnlineResource>
-										</mrd:onLine>
-									</mrd:MD_DigitalTransferOptions>
-								</mrd:distributorTransferOptions>
 							</mrd:MD_Distributor>
 						</mrd:formatDistributor>
 					</mrd:MD_Format>
@@ -526,7 +503,7 @@
 		</mdb:resourceLineage>
 		<mdb:metadataConstraints>
 			<mco:MD_SecurityConstraints>
-				<xsl:variable name="stype" select="field_security_classification/a/text()" />
+				<xsl:variable name="stype" select="field_security_classification" />
 				<mco:classification>
 					<mco:MD_ClassificationCode codeList="codeListLocation#MD_ClassificationCode"
 						codeListValue="{$stype}" />
@@ -555,7 +532,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
 				</cit:CI_Organisation>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -570,7 +547,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
 				</cit:CI_Organisation>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -585,7 +562,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation"/>
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation"/>
 				</cit:CI_Organisation>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -596,12 +573,13 @@
 			<cit:role>
 				<cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode"
 					codeListValue="pointOfContact" />
-			</cit:role>
+			</cit:role>  
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" />
+			<!--		<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" /> -->
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
 				</cit:CI_Organisation>
-			</cit:party>
+			</cit:party> 
 		</cit:CI_Responsibility>
 	</xsl:template>
 
@@ -613,13 +591,196 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
+				<!--	<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" /> -->
 				</cit:CI_Organisation>
 			</cit:party>
 		</cit:CI_Responsibility>
 	</xsl:template>
 
 	<!-- -->
+	
+	<xsl:template match=".[type/target_id = 'contact']" mode="individual" >
+
+		<xsl:variable name="name"
+			select="field_contact_name/value" />
+		<xsl:variable name="role"
+			select="field_role" />
+
+		<xsl:choose>
+			<xsl:when test="not(string($name))">
+				<cit:name>
+					<gco:CharacterString>
+					  <xsl:value-of select="title/value" />
+					</gco:CharacterString>
+				</cit:name>
+			</xsl:when>
+			<xsl:otherwise>
+				<cit:name>
+					<gco:CharacterString>
+                                <xsl:value-of select="$name" />
+                            </gco:CharacterString>
+				</cit:name>
+			</xsl:otherwise>
+		</xsl:choose>
+		<xsl:apply-templates select="field_organization" />
+		<xsl:choose>
+			<xsl:when test="not(string($role))">
+				<cit:positionName gco:nilReason="missing">
+					<gco:CharacterString />
+				</cit:positionName>
+			</xsl:when>
+			<xsl:otherwise>
+				<cit:positionName>
+					<gco:CharacterString>
+            <xsl:value-of select="$role" />      
+              </gco:CharacterString>
+				</cit:positionName>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template match=".[type/target_id = 'contact']" mode="organisation" >
+<!--    	    <xsl:variable name="name"
+			select="field_contact_name/value" />
+		<xsl:variable name="role"
+			select="field_role" />
+-->		<xsl:choose>
+			<xsl:when test="not(string(field_contact_name/value))">
+				<cit:name>
+					<gco:CharacterString>
+					  <xsl:value-of select="title/value" />
+					</gco:CharacterString>
+				</cit:name>
+			</xsl:when>
+			<xsl:otherwise>
+				<cit:name>
+					<gco:CharacterString>
+                                <xsl:value-of select="field_contact_name/value" />
+                            </gco:CharacterString>
+				</cit:name>
+			</xsl:otherwise>
+		</xsl:choose>
+		<xsl:apply-templates select="field_organization" />
+		<xsl:if test="string(field_role)">
+			<cit:individual>
+				<cit:CI_Individual>
+					<cit:positionName>
+						<gco:CharacterString><xsl:value-of select="field_role" /></gco:CharacterString>
+					</cit:positionName>
+				</cit:CI_Individual>
+			</cit:individual>
+		</xsl:if>
+	</xsl:template>
+  
+  <xsl:template match="field_organization">
+	
+		<cit:contactInfo>
+			<cit:CI_Contact>
+				<cit:phone>
+					<cit:CI_Telephone>
+						<xsl:choose>
+							<xsl:when test="not(string(field_telephone))">
+								<cit:number gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:number>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:number>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="field_telephone" />
+                            </gco:CharacterString>
+								</cit:number>
+							</xsl:otherwise>
+						</xsl:choose>
+						<cit:numberType>
+							<cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode"
+								codeListValue="voice" />
+						</cit:numberType>
+					</cit:CI_Telephone>
+				</cit:phone>
+				<cit:address>
+					<cit:CI_Address>
+						<xsl:choose>
+							<xsl:when test="not(string(field_address/streetAddress))">
+								<cit:deliveryPoint gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:deliveryPoint>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:deliveryPoint>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="field_address/streetAddress" />
+                            </gco:CharacterString>
+								</cit:deliveryPoint>
+							</xsl:otherwise>
+						</xsl:choose>
+						<xsl:choose>
+							<xsl:when
+								test="not(string(field_address/addressLocality))">
+								<cit:city gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:city>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:city>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="normalize-space(field_address/addressLocality)" />
+                            </gco:CharacterString>
+								</cit:city>
+							</xsl:otherwise>
+						</xsl:choose>
+						<xsl:choose>
+							<xsl:when
+								test="not(string(field_address/addressRegion ))">
+								<cit:administrativeArea gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:administrativeArea>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:administrativeArea>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="normalize-space(field_address/addressRegion)" />
+                            </gco:CharacterString>
+								</cit:administrativeArea>
+							</xsl:otherwise>
+						</xsl:choose>
+						<cit:postalCode>
+							<gco:CharacterString>
+								<xsl:value-of select="field_address/postalCode" />
+							</gco:CharacterString>
+						</cit:postalCode>
+						<cit:country>
+							<gco:CharacterString>
+								<xsl:value-of select="field_address/addressCountry" />
+							</gco:CharacterString>
+						</cit:country>
+						<xsl:choose>
+							<xsl:when
+								test=" not(field_email) or not(string(field_email = ''))">
+								<cit:electronicMailAddress
+									gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:electronicMailAddress>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:electronicMailAddress>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="field_email" />
+                            </gco:CharacterString>
+								</cit:electronicMailAddress>
+							</xsl:otherwise>
+						</xsl:choose>
+					</cit:CI_Address>
+				</cit:address>
+			</cit:CI_Contact>
+		</cit:contactInfo>
+	</xsl:template>
 
 	<xsl:template match="(.)//div[@class='content clearfix']" mode="individual" >
 
@@ -701,7 +862,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Individual>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="individual" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="individual" />
 				</cit:CI_Individual>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -715,7 +876,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Individual>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="individual" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="individual" />
 				</cit:CI_Individual>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -729,7 +890,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Individual>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="individual" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="individual" />
 				</cit:CI_Individual>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -743,7 +904,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Individual>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="individual" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="individual" />
 				</cit:CI_Individual>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -757,7 +918,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Individual>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="individual" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="individual" />
 				</cit:CI_Individual>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -771,7 +932,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Individual>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="individual" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="individual" />
 				</cit:CI_Individual>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -785,7 +946,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Individual>
-					<xsl:apply-templates select=".//div[@class='content clearfix']" mode="individual" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="individual" />
 				</cit:CI_Individual>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -1005,7 +1166,7 @@
 		</cit:contactInfo>
 	</xsl:template>
 
-	<xsl:template match="field_principal_contributors/div/ol/li">
+	<xsl:template match="field_authors">
 		<cit:citedResponsibleParty>
 			<cit:CI_Responsibility>
 				<cit:role>

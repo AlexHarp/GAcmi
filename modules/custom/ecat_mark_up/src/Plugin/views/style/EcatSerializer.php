@@ -31,6 +31,7 @@ class EcatSerializer extends Serializer
     public function query() {
       parent::query();
       $this->view->query->where = [];//remove the contextual filter so we can still grab all for recursion
+      dpm($this->view->query, "query");
     }
 
     public function preRender($result) {
@@ -70,13 +71,10 @@ class EcatSerializer extends Serializer
     $render = parent::render();
     $expandedXML = $this->expandXML($render);
     file_put_contents("/var/www/html/sites/default/files/ecatbuffer.xml.3", $expandedXML);
-
     $saxon = new SaxonProcessor(true);
     $xslt = $saxon->newXsltProcessor();
-    //dpm($baseXML, "basexml");
     $xslt->compileFromFile("/var/www/html/sites/default/files/eCat-NCIv3.xsl");
     $xmlStr = $saxon->parseXmlFromString($expandedXML);
-    //dpm($xmlStr, "xmlstr");
     $xslt->setSourceFromXdmValue($xmlStr);
     return $xslt->transformToString();
   }       
@@ -86,16 +84,15 @@ class EcatSerializer extends Serializer
 
     $render = preg_replace(array('/\<item key=\"\d+?\"\>|\<\/item\>/'), '', $render);
 
-    $renderSplits = preg_split('/(\<target_id\>\d+?\<\/target_id\>\<target_type>node\<\/target_type>.*?\<\/url>|\<nid\>\<value\>\d+\<\/value\>\<\/nid\>)/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
+    $renderSplits = preg_split('/(\<target_id\>\d+?\<\/target_id\>\<target_type>(node|taxonomy_term)\<\/target_type>.*?\<\/url>|\<nid\>\<value\>\d+\<\/value\>\<\/nid\>)/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
     $retStr = "";
 //Build node map
     $nodeMap = array();
     $nodeStartIndex = -1;
     $currNode = "";
-dpm("running");
     $nodeContents = array();
     for($c = 1; $c < sizeof($renderSplits); $c++){
-      dpm($renderSplits[$c], "split");
+    //  dpm($renderSplits[$c], "split");
       if(!strncmp($renderSplits[$c], "<target_id>", 11)){
         //dpm("in loop");
         //dpm($split, "loop split");
@@ -127,7 +124,7 @@ dpm("running");
       if(preg_match('/\<type\>\<target_id\>(\w+)/', $node[1], $matches)){
         if(!strcmp($matches[1],"product")){
           $expandNid = sscanf($node[0], "<nid><value>%d");
-          dpm($this->view->args[0], "arg");
+          //dpm($this->view->args[0], "arg");
           if($this->view->args[0]){
             if($this->view->args[0] == $expandNid[0])
               $retStr .= "<item key=\"".$expandNid[0]."\">".$this->expand($nodeMap, $expandNid[0])."</item>";
