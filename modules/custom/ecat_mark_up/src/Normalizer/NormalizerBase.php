@@ -16,30 +16,4 @@ abstract class NormalizerBase extends SerializationNormalizerBase implements Den
    * @var array
    */
   protected $formats = ['eCat_XML'];
-
-  /**
-   * {@inheritdoc}
-   */
-  /*public function supportsNormalization($data, $format = NULL) {
-    return in_array($format, $this->formats) && parent::supportsNormalization($data, $format);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  /*public function supportsDenormalization($data, $type, $format = NULL) {
-    if (in_array($format, $this->formats) && (class_exists($this->supportedInterfaceOrClass) || interface_exists($this->supportedInterfaceOrClass))) {
-      $target = new \ReflectionClass($type);
-      $supported = new \ReflectionClass($this->supportedInterfaceOrClass);
-      if ($supported->isInterface()) {
-        return $target->implementsInterface($this->supportedInterfaceOrClass);
-      }
-      else {
-        return ($target->getName() == $this->supportedInterfaceOrClass || $target->isSubclassOf($this->supportedInterfaceOrClass));
-      }
-    }
-
-    return FALSE;
-  }*/
-
 }
