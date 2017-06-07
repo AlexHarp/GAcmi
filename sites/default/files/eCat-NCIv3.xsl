@@ -378,7 +378,7 @@
 						</mco:useConstraints>
 
 						<xsl:choose>
-							<xsl:when test="not(string(field_license))">
+							<xsl:when test="not(string(field_license/name/value))">
 								<mco:otherConstraints gco:nilReason="missing">
 									<gco:CharacterString />
 								</mco:otherConstraints>
@@ -386,7 +386,7 @@
 							<xsl:otherwise>
 								<mco:otherConstraints>
 									<gco:CharacterString>
-                                <xsl:value-of select="string(field_license)" />
+                                <xsl:value-of select="field_license/name/value" />
                             </gco:CharacterString>
 								</mco:otherConstraints>
 							</xsl:otherwise>
@@ -400,7 +400,7 @@
 					<mco:MD_SecurityConstraints>
 						<mco:classification>
 							<xsl:variable name="stype"
-								select="string(Security-classification)" />
+								select="string(field_security_classification/name/value)" />
 							<mco:MD_ClassificationCode
 								codeList="codeListLocation#MD_ClassificationCode" codeListValue="{$stype}" />
 						</mco:classification>
@@ -503,7 +503,7 @@
 		</mdb:resourceLineage>
 		<mdb:metadataConstraints>
 			<mco:MD_SecurityConstraints>
-				<xsl:variable name="stype" select="field_security_classification" />
+				<xsl:variable name="stype" select="field_security_classification/name/value" />
 				<mco:classification>
 					<mco:MD_ClassificationCode codeList="codeListLocation#MD_ClassificationCode"
 						codeListValue="{$stype}" />
