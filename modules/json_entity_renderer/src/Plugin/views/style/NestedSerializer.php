@@ -40,7 +40,6 @@ class NestedSerializer extends Serializer
   
     private function expand(&$nodeMap, $expandId){
       $retStr = "";
-
       $expandCount = 0;
       foreach($nodeMap[$expandId] as &$row){
 	if(preg_match('/%&\d+%&$/', $row)){
@@ -50,7 +49,7 @@ class NestedSerializer extends Serializer
 	     $row = ",";
            else
 	     $row = "";
-	   $row .= $this->expand($nodeMap, $nid[0]); //if single expand we need to kill the tail comma of te node
+	   $row .= rtrim($this->expand($nodeMap, $nid[0]),","); //if single expand we need to kill the tail comma of te node
 	   $expandCount++;
 	   $retStr .= $row;
    	} else {
@@ -68,44 +67,41 @@ class NestedSerializer extends Serializer
 	$render = parent::render();
         $oldRender = $render;
         $debugflag = false;
-        print_r($render);
         // Add separator definition so Microsoft Word would know how to open the csv
         // file.
-        //$render = preg_replace(array('/\":\"\[/'), '":[', $render); //start of array
+        $render = preg_replace(array('/\":\"\[/'), '":[', $render); //start of array
         if($debugflag){
           $render = preg_replace(array('/\}\]\",/'), '}],' . "\n", $render); //end of sub array }]", -> }],
         }else{
-        //  $render = preg_replace(array('/\}\]\",/'), '}],', $render); //end of sub array }]", -> }],
+          $render = preg_replace(array('/\}\]\",/'), '}],', $render); //end of sub array }]", -> }],
         }
-        //$render = preg_replace(array('/\]\"\},/'), ']},', $render); //end of root array ]"}, -> ]},
-        //find all areas to expand and nod ids for indexing
-        $renderSplits = preg_split('/(\<target_id\>\d+?\<\/target_id\>\<target_type>node\<\/target_type>.*?\<\/url>|\<nid\>\<value\>\d+\<\/value\>\<\/nid\>)/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $render = preg_replace(array('/\]\"\},/'), ']},', $render); //end of root array ]"}, -> ]},
+        $renderSplits = preg_split('/(\{\"target_id\":\d+?,\"target_type\":\"node\".*?\"\}|\{\"nid\":\[\{"value\":\d+\})/', $render, -1, PREG_SPLIT_DELIM_CAPTURE);
         $retStr = "";
 //Build node map
 	$nodeMap = array();
 	$nodeStartIndex = -1;
 	$currNode = "";
-dpm("running");
 	$nodeContents = array();
 	for($c = 1; $c < sizeof($renderSplits); $c++){
-          dpm($renderSplits[$c], "split");
+          //dpm($renderSplits[$c], "split");
           //dpm(strncmp($renderSplits[$c], "{\"target_id\":", 13), "strcmp");
-          if(!strncmp($renderSplits[$c], "<target_id>", 11)){
+          if(!strncmp($renderSplits[$c], "{\"target_id\":", 13)){
             //dpm("in loop");
             //dpm($split, "loop split");
-            $nid = sscanf($renderSplits[$c], "{<target_id\":%d");
+            $nid = sscanf($renderSplits[$c], "{\"target_id\":%d");
 	    $nid[0] = "%&" . $nid[0] . "%&";
             //dpm($nid, "nid");
             $renderSplits[$c] = $nid[0];
           }  
-	  if(!strncmp($renderSplits[$c], "<nid><value>", 12)){
+	  if(!strncmp($renderSplits[$c], "{\"nid\":[{\"value\":", 17)){
  	    if($nodeStartIndex == -1){
-	      $currNode = sscanf($renderSplits[$c], "<nid><value>%d");
+	      $currNode = sscanf($renderSplits[$c], "{\"nid\":[{\"value\":%d");
               $nodeContents[] = $renderSplits[$c];
 	      $nodeStartIndex = 1; //[1] as [0]m == {
 	    } else {
 	      $nodeMap[$currNode[0]] = $nodeContents;
-	      $currNode = sscanf($renderSplits[$c], "<nid><value>%d");
+	      $currNode = sscanf($renderSplits[$c], "{\"nid\":[{\"value\":%d");
 	      $nodeContents = array();
               $nodeContents[] = $renderSplits[$c];
 //wont find last node ?? is this still a thing
@@ -116,12 +112,11 @@ dpm("running");
           $retStr .= "\n\n\n\n".$renderSplits[$c];
         }
 //expand nodes
-dpm($this->view->args[0], "json-arg");
-	$retStr = "";
+	$retStr = "[";
 	foreach($nodeMap as &$node){
-          if(preg_match('/\<type\>\<target_id\>(\w+)/', $node[1], $matches)){
+          if(preg_match('/\"type\":\[\{\"target_id\":\"(\w+)/', $node[1], $matches)){
 	    if(!strcmp($matches[1], $this->view->rowPlugin->getRootType())){
-	      $expandNid = sscanf($node[0], "<nid><value>%d");
+	      $expandNid = sscanf($node[0], "{\"nid\":[{\"value\":%d");
 	      if($this->view->args[0]){
 	        if($this->view->args[0] == $expandNid[0])
 		  $retStr .= $this->expand($nodeMap, $expandNid[0]);
@@ -138,8 +133,8 @@ dpm($this->view->args[0], "json-arg");
           $render = preg_replace(array('/\{\"nid\"/'), "\n\n" . '{"nid"', $render); //hydroid2 spacing
           $render = preg_replace(array('/,\"/'), ",\n\"", $render); //hydroid2 spacing
         }
-//	$retStr = rtrim($retStr,", ");
-//	$retStr .= "]";
+	$retStr = rtrim($retStr,", ");
+	$retStr .= "]";
         return $retStr;
     }
 }

@@ -2,7 +2,6 @@
 
 /**
  * @file
- * Contains \Drupal\tablefield\Plugin\Field\FieldFormatter\TablefieldFormatter.
  */
 
 namespace Drupal\tablefield\Plugin\Field\FieldFormatter;
@@ -10,9 +9,7 @@ namespace Drupal\tablefield\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Url;
-use Drupal\Component\Utility\Html;
-//use Drupal\tablefield\Utility\Tablefield;
-
+// Use Drupal\tablefield\Utility\Tablefield;.
 /**
  * Plugin implementation of the default Tablefield formatter.
  *
@@ -39,27 +36,27 @@ class TablefieldFormatter extends FormatterBase {
     $entity_type = $entity->getEntityTypeId();
     $entity_id = $entity->id();
 
+    $elements = [];
 
-    $elements = array();
-  
     foreach ($items as $delta => $table) {
 
       if (!empty($table->value)) {
-        $tabledata = $table->value;//Tablefield::rationalizeTable($table->value);
+        // Tablefield::rationalizeTable($table->value);.
+        $tabledata = $table->value;
 
-        // Run the table through input filters
+        // Run the table through input filters.
         foreach ($tabledata as $row_key => $row) {
           foreach ($row as $col_key => $cell) {
-            $tabledata[$row_key][$col_key] = array(
-              'data' => empty($table->format) ? Html::escape($cell) : check_markup($cell, $table->format),
-              'class' => array('row_' . $row_key, 'col_' . $col_key)
-            );
+            $tabledata[$row_key][$col_key] = [
+              'data' => empty($table->format) ? $cell : check_markup($cell, $table->format),
+              'class' => ['row_' . $row_key, 'col_' . $col_key],
+            ];
           }
         }
-  
-        // Pull the header for theming
+
+        // Pull the header for theming.
         $header_data = array_shift($tabledata);
-  
+
         // Check for an empty header, if so we don't want to theme it.
         $noheader = TRUE;
         foreach ($header_data as $cell) {
@@ -68,55 +65,55 @@ class TablefieldFormatter extends FormatterBase {
             break;
           }
         }
-  
+
         $header = $noheader ? NULL : $header_data;
 
-        $render_array = array();
+        $render_array = [];
 
         // If the user has access to the csv export option, display it now.
         if ($field_settings['export'] && \Drupal::currentUser()->hasPermission('export tablefield')) {
 
-          $route_params = array(
+          $route_params = [
             'entity_type' => $entity_type,
             'entity_id' => $entity_id,
             'field_name' => $field_name,
             'langcode' => $items->getLangcode(),
             'delta' => $delta,
-          );
+          ];
 
           $url = Url::fromRoute('tablefield.export', $route_params);
 
-          $render_array['export'] = array(
+          $render_array['export'] = [
             '#type' => 'container',
-            '#attributes' => array(
+            '#attributes' => [
               'id' => 'tablefield-export-link-' . $delta,
               'class' => 'tablefield-export-link',
-            ),
-          );
-          $render_array['export']['link'] = array(
+            ],
+          ];
+          $render_array['export']['link'] = [
             '#type' => 'link',
             '#title' => $this->t('Export Table Data'),
             '#url' => $url,
-          );
+          ];
         }
 
-        $render_array['tablefield'] = array(
+        $render_array['tablefield'] = [
           '#type' => 'table',
           '#header' => $header,
           '#rows' => $tabledata,
-          '#attributes' => array(
+          '#attributes' => [
             'id' => 'tablefield-' . $delta,
-            'class' => array(
-              'tablefield'
-            ),
-          ),
-          '#prefix' => '<div id="tablefield-wrapper-'. $delta .'" class="tablefield-wrapper">',
+            'class' => [
+              'tablefield',
+            ],
+          ],
+          '#prefix' => '<div id="tablefield-wrapper-' . $delta . '" class="tablefield-wrapper">',
           '#suffix' => '</div>',
-        );
+        ];
 
         $elements[$delta] = $render_array;
       }
-  
+
     }
     return $elements;
   }

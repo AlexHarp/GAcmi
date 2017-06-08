@@ -86,7 +86,17 @@
  * );
  * @endcode
  */
- $databases = array();
+ 
+$databases['default']['default'] = array (
+  'database' => 'CMI',
+  'username' => 'cmi',
+  'password' => 'mysqlpw',
+  'host' => 'cmi.carlmqpk26rh.ap-southeast-2.rds.amazonaws.com',
+  'port' => '3306',
+  'driver' => 'mysql',
+  'prefix' => '',
+  'collation' => 'utf8mb4_general_ci',
+);
 
 /**
  * Customizing database settings.
@@ -295,7 +305,7 @@ $config_directories = array();
  *   $settings['hash_salt'] = file_get_contents('/home/example/salt.txt');
  * @endcode
  */
-$settings['hash_salt'] = 'k3Bh9B14opeRKD4v6_GGg522S7SAL2uOsVEvJze3e2DW_htB_sXABufRZGLhhU-TlspftrzWoA';
+$settings['hash_salt'] = 'xt8FJAC1pnbaJb9pCx4ylUOyl1rjTRI95Ph_nDaiJguZogN99YWbYMi4kJ4LtxQGlVH1ohEphQ';
 
 /**
  * Deployment identifier.
@@ -734,7 +744,10 @@ $settings['container_yamls'][] = $app_root . '/' . $site_path . '/services.yml';
  * example.org, with all subdomains included.
  */
 
-$settings['trusted_host_patterns'] = array('^52.64.197.68$',);
+$settings['trusted_host_patterns'] = array(
+  '52.62.193.216',
+  '^.+\.ga\.gov\.au$',
+);
 
 /**
  * The default list of directories that will be ignored by Drupal's file API.
@@ -770,10 +783,10 @@ $databases['default']['default'] = array (
   'username' => 'cmi',
   'password' => 'mysqlpw',
   'prefix' => '',
-  'host' => '127.0.0.1',
+  'host' => 'cmi.carlmqpk26rh.ap-southeast-2.rds.amazonaws.com',
   'port' => '3306',
   'namespace' => 'Drupal\\Core\\Database\\Driver\\mysql',
   'driver' => 'mysql',
 );
 $settings['install_profile'] = 'standard';
-$config_directories['sync'] = 'sites/default/files/config_sRtJ5cjKJZEfv73rH4jp4Rl2R-6d3r99j__r9JXbtJmXqru1coJx4qBjuOLSk1NK_sv5Yja09g/sync';
+$config_directories['sync'] = 'sites/default/files/config_VluLsvpiLEo7KEpE7jQt7mQGsEUtZTaxCl-Hhop00aZDBu4E4KTX1VeevN-C8bTvLNVBgTAuyQ/sync';

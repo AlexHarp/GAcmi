@@ -246,7 +246,9 @@ class CorrespondingReference extends ConfigEntityBase implements CorrespondingRe
       foreach ($differences as $operation => $entities) {
         /** @var FieldableEntityInterface $correspondingEntity */
         foreach ($entities as $correspondingEntity) {
-          $this->synchronizeCorrespondingField($entity, $correspondingEntity, $correspondingField, $operation);
+          if ($correspondingEntity) {
+            $this->synchronizeCorrespondingField($entity, $correspondingEntity, $correspondingField, $operation);
+          }
         }
       }
     }

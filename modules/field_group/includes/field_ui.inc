@@ -8,6 +8,7 @@
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Render\Element;
 use Drupal\field_ui\Form\EntityDisplayFormBase;
 
@@ -26,7 +27,6 @@ function field_group_field_ui_form_params($form, \Drupal\Core\Entity\EntityDispl
   $params = new stdClass();
   $params->entity_type = $display->getTargetEntityTypeId();
   $params->bundle = $display->getTargetBundle();
-  $params->region_callback = 'field_group_display_overview_row_region';
   $params->mode = $display->getMode();
   $params->context = field_group_get_context_from_display($display);
 
@@ -39,6 +39,16 @@ function field_group_field_ui_form_params($form, \Drupal\Core\Entity\EntityDispl
     foreach ($group->children as $child) {
       $params->parents[$child] = $name;
     }
+  }
+
+  // Get possible regions.
+  $layout_info = $display->getThirdPartySettings('field_layout');
+  if (!empty($layout_info) && isset($layout_info['id'])) {
+    $layout = \Drupal::service('plugin.manager.core.layout')->getDefinition($layout_info['id']);
+    $params->available_regions = $layout->getRegionNames();
+  }
+  else {
+    $params->available_regions = ['content', 'hidden'];
   }
 
   return $params;
@@ -71,12 +81,12 @@ function field_group_field_ui_display_form_alter(&$form, FormStateInterface $for
     return;
   }
 
-  $callback_object = $form_state->getBuildInfo()['callback_object'];
-  if (!$callback_object instanceof EntityDisplayFormBase) {
+  $entity_display_form = $form_state->getBuildInfo()['callback_object'];
+  if (!$entity_display_form instanceof EntityDisplayFormBase) {
     throw new InvalidArgumentException('Unkown callback object.');
   }
 
-  $display = $callback_object->getEntity();
+  $display = $entity_display_form->getEntity();
 
   $params = field_group_field_ui_form_params($form, $display);
   $form['#fieldgroups'] = array_keys($params->groups);
@@ -137,11 +147,12 @@ function field_group_field_ui_display_form_alter(&$form, FormStateInterface $for
     $js_rows_data[$id] = array('type' => 'group', 'name' => $name);
     // A group cannot be selected as its own parent.
     $parent_options = $table['#parent_options'];
+    $region = isset($group->region) && in_array($group->region, $params->available_regions) ? $group->region : 'hidden';
     unset($parent_options[$name]);
     $table[$name] = array(
       '#attributes' => array('class' => array('draggable', 'field-group'), 'id' => $id),
       '#row_type' => 'group',
-      '#region_callback' => $params->region_callback,
+      '#region_callback' => 'field_group_display_overview_row_region',
       '#js_settings' => array('rowHandler' => 'group'),
       'human_name' => array(
         '#markup' => Html::escape(t($group->label)),
@@ -168,6 +179,12 @@ function field_group_field_ui_display_form_alter(&$form, FormStateInterface $for
           '#default_value' => $name,
           '#attributes' => array('class' => array('field-name')),
         ),
+      ),
+      'region' => array(
+        '#type' => 'select',
+        '#options' => $entity_display_form->getRegionOptions(),
+        '#default_value' => $region,
+        '#attributes' => ['class' => ['field-region']],
       ),
     );
 
@@ -259,7 +276,7 @@ function field_group_field_ui_display_form_alter(&$form, FormStateInterface $for
 
       $delete_route = \Drupal\field_group\FieldgroupUi::getDeleteRoute($group);
 
-      $table[$name]['settings_edit']['#suffix'] .= Drupal::l(t('delete'), $delete_route);
+      $table[$name]['settings_edit']['#suffix'] .= Link::fromTextAndUrl(t('delete'), $delete_route)->toString();
     }
 
     $form_state->set('field_group', $field_group_form_state);
@@ -369,10 +386,8 @@ function field_group_field_ui_create_vertical_tabs(&$form, &$form_state, $params
  * @return String the current region.
  */
 function field_group_display_overview_row_region($row) {
-  switch ($row['#row_type']) {
-    case 'group':
-      return ($row['format']['type']['#value'] == 'hidden' ? 'hidden' : 'content');
-  }
+  // We already cleaned region when building the form.
+  return $row['region']['#value'];
 }
 
 /**
@@ -383,6 +398,7 @@ function field_group_display_overview_row_region($row) {
 function field_group_field_overview_submit($form, FormStateInterface $form_state) {
   $form_values = $form_state->getValue('fields');
   $fields_added = $form_state->getValue('fields_added');
+  $layout_id = $form_state->getValue('field_layout');
 
   /**
    * @var \Drupal\Core\Entity\EntityDisplayBase $display
@@ -393,6 +409,17 @@ function field_group_field_overview_submit($form, FormStateInterface $form_state
   $bundle = $display->get('bundle');
   $mode = $display->get('mode');
   $context = field_group_get_context_from_display($display);
+
+  // Load field layout info.
+  $layout_regions = [];
+  $default_region = 'hidden';
+  if ($layout_id) {
+    /** @var \Drupal\Core\Layout\LayoutDefinition $field_layout */
+    if ($field_layout = \Drupal::service('plugin.manager.core.layout')->getDefinition($layout_id)) {
+      $layout_regions = $field_layout->getRegionNames();
+      $default_region = $field_layout->getDefaultRegion();
+    }
+  }
 
   // Collect children.
   $children = array_fill_keys($form['#fieldgroups'], array());
@@ -418,6 +445,9 @@ function field_group_field_overview_submit($form, FormStateInterface $form_state
       $group->children = array_keys($children[$group_name]);
       $group->parent_name = $form_values[$group_name]['parent'];
       $group->weight = $form_values[$group_name]['weight'];
+
+      // If region is changed, make sure the group ends up in an existing region.
+      $group->region = !in_array($form_values[$group_name]['region'], $layout_regions) ? $default_region : $form_values[$group_name]['region'];
 
       $old_format_type = $group->format_type;
       $group->format_type = isset($form_values[$group_name]['format']['type']) ? $form_values[$group_name]['format']['type'] : 'visible';
