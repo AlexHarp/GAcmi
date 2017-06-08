@@ -1,5 +1,0 @@
-drupal.simpleaddress-links:
-  version: VERSION
-  css:
-    component:
-      css/simpleaddress.field.css: {}

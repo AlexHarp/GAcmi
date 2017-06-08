@@ -1,8 +1,0 @@
-id: bibcite_reference.citation
-label: Citation
-status: true
-cache: true
-targetEntityType: bibcite_reference
-dependencies:
-  module:
-    - bibcite_entity
