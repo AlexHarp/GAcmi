@@ -8,9 +8,11 @@ dependencies:
   - serialization
   - conflict
   - system (>=8.1.0)
+test_dependencies:
+  - paragraphs
 
-# Information added by Drupal.org packaging script on 2017-04-06
-version: '8.x-1.0-beta1+4-dev'
+# Information added by Drupal.org packaging script on 2017-05-30
+version: '8.x-1.0-beta1+12-dev'
 core: '8.x'
 project: 'multiversion'
-datestamp: 1491461589
+datestamp: 1496132648

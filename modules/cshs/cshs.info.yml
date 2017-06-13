@@ -7,8 +7,8 @@ type: module
 dependencies:
   - taxonomy
 
-# Information added by Drupal.org packaging script on 2017-04-18
-version: '8.x-1.0-beta3+2-dev'
+# Information added by Drupal.org packaging script on 2017-06-02
+version: '8.x-1.0-beta3+6-dev'
 core: '8.x'
 project: 'cshs'
-datestamp: 1492519229
+datestamp: 1496414649

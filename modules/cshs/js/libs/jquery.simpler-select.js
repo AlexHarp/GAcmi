@@ -67,13 +67,12 @@
 
       this.$element.after($selectElement);
 
-      $.each(initialParents, function (idx, value) {
+      $.each(initialParents, function (i, value) {
         that.selectSetValue($currentSelect, value);
 
-        var optionInfo = that.getOptionInfoByValue(value);
-        var $nextSelect = that.createSelect(optionInfo.children, value, idx + 1);
+        var $nextSelect = that.createSelect(that.getOptionInfoByValue(value).children, value, i + 1);
 
-        if ($nextSelect !== null) {
+        if (null !== $nextSelect) {
           $currentSelect.after($nextSelect);
           $currentSelect = $nextSelect;
         }
@@ -113,31 +112,30 @@
       level = level || 0;
 
       var that = this;
-      var $select = $('<select class="form-select simpler-select">');
+      var $select = $('<select class="simpler-select">').addClass(that.$element.attr('class'));
+      var $wrapper = $('<div class="select-wrapper">');
 
       if (that.$element.hasClass('error')) {
         $select.addClass('error');
       }
 
-      // Add the _none option always.
+      // Always add the "_none" option.
       $select.append('<option value="' + that.settings.noneValue + '" data-parent-value="' + parent + '">' + that.settings.noneLabel + '</option>');
 
-      $.each(options, function (idx, option) {
-        if (option.value == that.settings.noneValue) {
-          // Do not add _none options (Already added by code above).
-          return true;
+      $.each(options, function (i, option) {
+        // Do not add "_none" option (already added by code above).
+        if (option.value != that.settings.noneValue) {
+          var $option = $('<option>')
+            .val(option.value)
+            // Remove dashes from the beginning, then set the label.
+            .text(option.label.replace(/(- )+/, ''));
+
+          if (option.children.length) {
+            $option.addClass('has-children');
+          }
+
+          $select.append($option);
         }
-
-        var $option = $('<option>')
-          .val(option.value)
-          // Remove dashes from the beginning, then set the label.
-          .text(option.label.replace(/(- )+/, ''));
-
-        if (option.children.length) {
-          $option.addClass('has-children');
-        }
-
-        $select.append($option);
       });
 
       $select.change(function () {
@@ -150,7 +148,7 @@
         var selectedValue = $selected.val();
         var parentValue = $selected.data('parent-value');
 
-        if (typeof parentValue === 'undefined') {
+        if (undefined === parentValue) {
           parentValue = selectedValue;
         }
 
@@ -165,13 +163,16 @@
         // Build new child select.
         var optionInfo = that.getOptionInfoByValue(selectedValue);
 
-        if (typeof optionInfo.children !== 'undefined') {
+        if (undefined !== optionInfo.children) {
           that.addSelectAfter(that.createSelect(optionInfo.children, selectedValue, that.selectGetLevel()));
         }
       });
 
-      var $wrapper = $('<div class="select-wrapper"><label>' + (this.settings.labels[level] || '') + '</label></div>');
-      $wrapper.find('label').after($select);
+      if (that.settings.labels[level]) {
+        $wrapper.append('<label>' + that.settings.labels[level] + '</label>');
+      }
+
+      $wrapper.append($select);
 
       return $wrapper;
     },
@@ -190,26 +191,20 @@
      *   Options tree.
      */
     buildTree: function (array, parent, tree) {
-      var children = [];
-
       tree = tree || [];
       parent = parent || {value: 0};
 
-      $.each(array, function (value, child) {
-        if (typeof child !== 'undefined') {
-          // Here must be no strict comparison!
-          if (child.parent == parent.value) {
-            children.push(child);
-          }
-        }
+      var children = $.grep(array, function (child) {
+        // Here must be no strict comparison!
+        return undefined !== child && child.parent == parent.value;
       });
 
       if (children.length) {
-        if (parent.value == 0) {
+        if (0 == parent.value) {
           tree = children;
         }
         else {
-          parent['children'] = children;
+          parent.children = children;
         }
 
         for (var i = 0; i < children.length; i++) {
@@ -236,11 +231,10 @@
      * Remove all following selects.
      */
     selectRemoveNext: function () {
-      var $wrapper = this.$currentSelect.parents('.select-wrapper').nextAll('.select-wrapper');
-
-      if (typeof $wrapper !== 'undefined') {
-        $wrapper.remove();
-      }
+      this.$currentSelect
+        .parents('.select-wrapper')
+        .nextAll('.select-wrapper')
+        .remove();
     },
 
     /**
@@ -281,10 +275,9 @@
 
       parents = parents || [];
 
-      var $option = this.getOptionByValue(value);
-      var parent = $option.data('parent');
+      var parent = this.getOptionByValue(value).data('parent');
 
-      if (typeof parent !== 'undefined' && parent != 0) {
+      if (undefined !== parent && 0 != parent) {
         parents.push(parent);
         this.getAllParents(this.getOptionByValue(parent).val(), parents);
       }

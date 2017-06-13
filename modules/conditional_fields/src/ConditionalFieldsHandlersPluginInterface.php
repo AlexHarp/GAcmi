@@ -8,19 +8,19 @@ namespace Drupal\conditional_fields;
 interface ConditionalFieldsHandlersPluginInterface {
 
   /**
-   * Check if the handler is appropriate for the field.
-   *
-   * @param string $field
-   *   The field that needs further processing.
-   *
-   * @return bool
-   *   A result of the checking.
-   */
-  public function checkHandler($field);
-
-  /**
    * Executes states handler according to conditional fields settings.
    */
   public function statesHandler($field, $field_info, $options);
+
+  /**
+   * Get values from widget settings for plugin.
+   *
+   * @param array $value_form
+   *   Dependency options.
+   *
+   * @return mixed
+   *   Values for triggering events.
+   */
+  public function getWidgetValue(array $value_form);
 
 }

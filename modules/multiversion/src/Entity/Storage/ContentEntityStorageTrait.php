@@ -21,10 +21,31 @@ trait ContentEntityStorageTrait {
   protected $workspaceId = NULL;
 
   /**
+   * @var  \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $originalStorage;
+
+  /**
    * {@inheritdoc}
    */
   public function getQueryServiceName() {
     return 'multiversion.entity.query.sql';
+  }
+
+  /**
+   * Get original entity type storage handler (not the multiversion one).
+   *
+   * @param string $type
+   *   Entity type.
+   *
+   * @return \Drupal\Core\Entity\EntityStorageInterface
+   *   Original entity type storage handler.
+   */
+  protected function getOriginalStorage($type) {
+    if ($this->originalStorage == NULL) {
+      $this->originalStorage = $this->entityManager->getHandler($type, 'original_storage');
+    }
+    return $this->originalStorage;
   }
 
   /**
@@ -116,6 +137,13 @@ trait ContentEntityStorageTrait {
   public function loadMultipleDeleted(array $ids = NULL) {
     $this->isDeleted = TRUE;
     return parent::loadMultiple($ids);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function saveWithoutForcingNewRevision(EntityInterface $entity) {
+    $this->getOriginalStorage($entity->getEntityTypeId())->save($entity);
   }
 
   /**
@@ -232,7 +260,12 @@ trait ContentEntityStorageTrait {
     // accurately build revision trees of all universally known revisions.
     $branch = [];
     $rev = $entity->_rev->value;
+    $revisions = $entity->_rev->revisions;
     list($i) = explode('-', $rev);
+    $count_revisions = count($revisions);
+    if ($count_revisions > $i) {
+      $i = $count_revisions;
+    }
 
     // This is a regular local save operation and a new revision token should be
     // generated. The new_edit property will be set to FALSE during replication
@@ -265,7 +298,6 @@ trait ContentEntityStorageTrait {
     // know about the revision history, for conflict handling etc. A list of
     // revisions are always passed in during replication.
     else {
-      $revisions = $entity->_rev->revisions;
       for ($c = 0; $c < count($revisions); ++$c) {
         $p = $c + 1;
         $rev = $i-- . '-' . $revisions[$c];

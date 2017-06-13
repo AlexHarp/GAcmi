@@ -6,8 +6,8 @@ package: Field types
 dependencies:
   - computed_field
 
-# Information added by Drupal.org packaging script on 2017-04-11
-version: '8.x-2.x-dev'
+# Information added by Drupal.org packaging script on 2017-06-08
+version: '8.x-2.0-alpha3'
 core: '8.x'
 project: 'computed_field'
-datestamp: 1491912849
+datestamp: 1496954944

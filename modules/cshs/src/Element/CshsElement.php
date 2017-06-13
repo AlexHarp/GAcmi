@@ -22,7 +22,7 @@ class CshsElement extends Select {
     $info['#labels'] = [];
     $info['#parent'] = 0;
     $info['#force_deepest'] = FALSE;
-    $info['#none_value'] = '_none';
+    $info['#none_value'] = CSHS_DEFAULT_NONE_VALUE;
     // @codingStandardsIgnoreStart
     $info['#none_label'] = $this->t(CSHS_DEFAULT_NONE_LABEL);
     // @codingStandardsIgnoreEnd
@@ -59,31 +59,32 @@ class CshsElement extends Select {
    * {@inheritdoc}
    */
   public static function validateElement(array &$element, FormStateInterface $form_state, array &$complete_form) {
-    // See if we are on the field settings form.
-    if ('field_ui_field_edit_form' !== $complete_form['#form_id']) {
-      // The value not selected.
-      if ($element['#value'] == $element['#none_value']) {
-        $form_state->setValueForElement($element, NULL);
+    // The value is not selected.
+    if (empty($element['#value']) || $element['#value'] == $element['#none_value']) {
+      // Element must have its "none" value when nothing selected. This will
+      // let it function correctly, for instance with views. Otherwise it could
+      // lead to illegal choice selection error.
+      // @link https://www.drupal.org/node/2882790
+      $form_state->setValueForElement($element, $element['#none_value']);
 
-        // Set an error if user doesn't select anything and field is required.
-        if ($element['#required']) {
-          $form_state->setError($element, t('@label field is required.', [
-            '@label' => $element['#label'],
-          ]));
-        }
+      // Set an error if user doesn't select anything and field is required.
+      if ($element['#required']) {
+        $form_state->setError($element, t('@label field is required.', [
+          '@label' => $element['#label'],
+        ]));
       }
-      // Do we want to force the user to select terms from the deepest level?
-      elseif ($element['#force_deepest']) {
-        /* @var \Drupal\taxonomy\TermStorage $storage */
-        $storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
-        $term = $storage->load($element['#value']);
+    }
+    // Do we want to force the user to select terms from the deepest level?
+    elseif ($element['#force_deepest']) {
+      /* @var \Drupal\taxonomy\TermStorage $storage */
+      $storage = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
+      $term = $storage->load($element['#value']);
 
-        // Set an error if term has children.
-        if (!empty($storage->loadChildren($term->id(), $term->getVocabularyId()))) {
-          $form_state->setError($element, t('You need to select a term from the deepest level in @label field.', [
-            '@label' => $element['#label'],
-          ]));
-        }
+      // Set an error if term has children.
+      if (!empty($storage->loadChildren($term->id(), $term->getVocabularyId()))) {
+        $form_state->setError($element, t('You need to select a term from the deepest level in @label field.', [
+          '@label' => $element['#label'],
+        ]));
       }
     }
   }

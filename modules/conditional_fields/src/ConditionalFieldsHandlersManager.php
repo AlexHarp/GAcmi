@@ -3,14 +3,20 @@
 namespace Drupal\conditional_fields;
 
 use Drupal\Component\Plugin\Factory\DefaultFactory;
+use Drupal\Component\Plugin\FallbackPluginManagerInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\Component\Plugin\Discovery\StaticDiscovery;
+use Drupal\Component\Plugin\Discovery\StaticDiscoveryDecorator;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+
 
 /**
  * Manages discovery and instantiation of handler plugins.
  */
-class ConditionalFieldsHandlersManager extends DefaultPluginManager {
+class ConditionalFieldsHandlersManager extends DefaultPluginManager implements FallbackPluginManagerInterface {
 
   /**
    * Constructs a new ConditionalFieldsHandlersManager object.
@@ -34,6 +40,50 @@ class ConditionalFieldsHandlersManager extends DefaultPluginManager {
   /**
    * {@inheritdoc}
    */
+  protected function getDiscovery() {
+    if (!isset($this->discovery)) {
+      $this->discovery = parent::getDiscovery();
+      $this->discovery = new StaticDiscoveryDecorator($this->discovery, [$this, 'registerDefinitions']);
+    }
+    return $this->discovery;
+  }
+
+  /**
+   * Callback for registering definitions for constraints shipped with Symfony.
+   *
+   * @see ConstraintManager::__construct()
+   */
+  public function registerDefinitions() {
+    $this->getDiscovery()->setDefinition('states_handler_string_textfield', [
+      'label' => new TranslatableMarkup('String textfield'),
+      'class' => '\Drupal\conditional_fields\Plugin\conditional_fields\handler\TextDefault',
+      'type' => ['string'],
+    ]);
+    $this->getDiscovery()->setDefinition('states_handler_string_textarea', [
+      'label' => new TranslatableMarkup('String textarea'),
+      'class' => '\Drupal\conditional_fields\Plugin\conditional_fields\handler\TextDefault',
+      'type' => ['string'],
+    ]);
+    $this->getDiscovery()->setDefinition('states_handler_text_textfield', [
+      'label' => new TranslatableMarkup('Text textfield'),
+      'class' => '\Drupal\conditional_fields\Plugin\conditional_fields\handler\TextDefault',
+      'type' => ['string'],
+    ]);
+    $this->getDiscovery()->setDefinition('states_handler_text_textarea', [
+      'label' => new TranslatableMarkup('Text textarea'),
+      'class' => '\Drupal\conditional_fields\Plugin\conditional_fields\handler\TextDefault',
+      'type' => ['string'],
+    ]);
+    $this->getDiscovery()->setDefinition('states_handler_text_textarea_with_summary', [
+      'label' => new TranslatableMarkup('Text textarea with summary'),
+      'class' => '\Drupal\conditional_fields\Plugin\conditional_fields\handler\TextDefault',
+      'type' => ['string'],
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getDefinitions() {
     // Remove the default plugin from the array.
     $definitions = parent::getDefinitions();
@@ -42,13 +92,10 @@ class ConditionalFieldsHandlersManager extends DefaultPluginManager {
   }
 
   /**
-   * A default plugin that should be used if better one was not found.
-   *
-   * @return object
-   *   A fully configured plugin instance.
+   * {@inheritdoc}
    */
-  public function getDefaultPlugin() {
-    return $this->createInstance('states_handler_default_state');
+  public function getFallbackPluginId($plugin_id, array $configuration = array()) {
+    return 'states_handler_default_state';
   }
 
 }

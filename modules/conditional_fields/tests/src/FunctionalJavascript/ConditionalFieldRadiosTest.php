@@ -2,19 +2,28 @@
 
 namespace Drupal\Tests\conditional_fields\FunctionalJavascript;
 
-use Drupal\Tests\conditional_fields\FunctionalJavascript\ConditionalFieldBase as JavascriptTestBase;
 use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Tests\conditional_fields\FunctionalJavascript\TestCases\ConditionalFieldCheckedUncheckedInterface;
+use Drupal\Tests\conditional_fields\FunctionalJavascript\TestCases\ConditionalFieldValueInterface;
 
 /**
  * Test Conditional Fields States.
  *
  * @group conditional_fields
  */
-class ConditionalFieldRadiosTest extends JavascriptTestBase {
+class ConditionalFieldRadiosTest extends ConditionalFieldTestBase implements
+  ConditionalFieldValueInterface,
+  ConditionalFieldCheckedUncheckedInterface {
 
   use EntityReferenceTestTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $screenshotPath = 'sites/simpletest/conditional_fields/radios/';
 
   /**
    * The name and vid of vocabulary, created for testing.
@@ -31,34 +40,64 @@ class ConditionalFieldRadiosTest extends JavascriptTestBase {
   protected $termsCount;
 
   /**
-   * Tests creating Conditional Field: Visible if has value from taxonomy.
+   * {@inheritdoc}
    */
-  public function testCreateConfigAnd() {
-    $user = $this->drupalCreateUser([
-      'administer nodes',
-      'view conditional fields',
-      'edit conditional fields',
-      'delete conditional fields',
-      'create article content',
+  protected function setUp() {
+    parent::setUp();
+    // Create a vocabulary with random name.
+    $this->taxonomyName = $this->getRandomGenerator()->word(8);
+    $vocabulary = Vocabulary::create([
+      'name' => $this->taxonomyName,
+      'vid' => $this->taxonomyName,
     ]);
-    $this->drupalLogin($user);
+    $vocabulary->save();
+    // Create a random taxonomy terms for vocabulary.
+    $this->termsCount = mt_rand(3, 5);
+    for ($i = 1; $i <= $this->termsCount; $i++) {
+      $termName = $this->getRandomGenerator()->word(8);
+      Term::create([
+        'parent' => [],
+        'name' => $termName,
+        'vid' => $this->taxonomyName,
+      ])->save();
+    }
+    // Add a custom field with taxonomy terms to 'Article'.
+    // The field label is a machine name of created vocabulary.
+    $handler_settings = [
+      'target_bundles' => [
+        $vocabulary->id() => $vocabulary->id(),
+      ],
+    ];
+    $this->createEntityReferenceField('node', 'article', 'field_' . $this->taxonomyName, $this->taxonomyName, 'taxonomy_term', 'default', $handler_settings);
+    EntityFormDisplay::load('node.article.default')
+      ->setComponent('field_' . $this->taxonomyName, ['type' => 'options_buttons'])
+      ->save();
+  }
 
-    // Visit a ConditionalFields configuration page that requires login.
-    $this->drupalGet('admin/structure/conditional_fields');
-    $this->assertSession()->statusCodeEquals(200);
+  /**
+   * {@inheritdoc}
+   */
+  public function testVisibleValueWidget() {
+    // TODO: Implement testVisibleValueWidget() method.
+    $this->markTestIncomplete();
+  }
 
-    // Configuration page contains the `Content` entity type.
-    $this->assertSession()->pageTextContains('Content');
+  /**
+   * {@inheritdoc}
+   */
+  public function testVisibleValueRegExp() {
+    // TODO: Implement testVisibleValueRegExp() method.
+    $this->markTestIncomplete();
+  }
 
-    // Visit a ConditionalFields configuration page for Content bundles.
-    $this->drupalGet('admin/structure/conditional_fields/node');
-    $this->assertSession()->statusCodeEquals(200);
-
-    // Configuration page contains the `Article` bundle of Content entity type.
-    $this->assertSession()->pageTextContains('Article');
+  /**
+   * {@inheritdoc}
+   */
+  public function testVisibleValueAnd() {
+    $this->baseTestSteps();
 
     // Visit a ConditionalFields configuration page for `Article` Content type.
-    $this->createCondition('admin/structure/conditional_fields/node/article', 'body', 'field_' . $this->taxonomyName, 'visible', 'value');
+    $this->createCondition('body', 'field_' . $this->taxonomyName, 'visible', 'value');
     // Change a condition's values set and the value.
     $this->changeField('#edit-values-set', CONDITIONAL_FIELDS_DEPENDENCY_VALUES_AND);
     // Random term id to check necessary value.
@@ -91,34 +130,13 @@ class ConditionalFieldRadiosTest extends JavascriptTestBase {
   }
 
   /**
-   * Tests creating Conditional Field: Visible if has one of values from taxonomy.
+   * {@inheritdoc}
    */
-  public function testCreateConfigOr() {
-    $user = $this->drupalCreateUser([
-      'administer nodes',
-      'view conditional fields',
-      'edit conditional fields',
-      'delete conditional fields',
-      'create article content',
-    ]);
-    $this->drupalLogin($user);
-
-    // Visit a ConditionalFields configuration page that requires login.
-    $this->drupalGet('admin/structure/conditional_fields');
-    $this->assertSession()->statusCodeEquals(200);
-
-    // Configuration page contains the `Content` entity type.
-    $this->assertSession()->pageTextContains('Content');
-
-    // Visit a ConditionalFields configuration page for Content bundles.
-    $this->drupalGet('admin/structure/conditional_fields/node');
-    $this->assertSession()->statusCodeEquals(200);
-
-    // Configuration page contains the `Article` bundle of Content entity type.
-    $this->assertSession()->pageTextContains('Article');
+  public function testVisibleValueOr() {
+    $this->baseTestSteps();
 
     // Visit a ConditionalFields configuration page for `Article` Content type.
-    $this->createCondition('admin/structure/conditional_fields/node/article', 'body', 'field_' . $this->taxonomyName, 'visible', 'value');
+    $this->createCondition('body', 'field_' . $this->taxonomyName, 'visible', 'value');
     // Change a condition's values set and the value.
     $this->changeField('#edit-values-set', CONDITIONAL_FIELDS_DEPENDENCY_VALUES_OR);
     // Random term id to check necessary value.
@@ -158,34 +176,29 @@ class ConditionalFieldRadiosTest extends JavascriptTestBase {
   }
 
   /**
-   * Tests creating Conditional Field: Visible if has any value from taxonomy.
+   * {@inheritdoc}
    */
-  public function testCreateConfigChecked() {
-    $user = $this->drupalCreateUser([
-      'administer nodes',
-      'view conditional fields',
-      'edit conditional fields',
-      'delete conditional fields',
-      'create article content',
-    ]);
-    $this->drupalLogin($user);
+  public function testVisibleValueNot() {
+    // TODO: Implement testVisibleValueNot() method.
+    $this->markTestIncomplete();
+  }
 
-    // Visit a ConditionalFields configuration page that requires login.
-    $this->drupalGet('admin/structure/conditional_fields');
-    $this->assertSession()->statusCodeEquals(200);
+  /**
+   * {@inheritdoc}
+   */
+  public function testVisibleValueXor() {
+    // TODO: Implement testVisibleValueXor() method.
+    $this->markTestIncomplete();
+  }
 
-    // Configuration page contains the `Content` entity type.
-    $this->assertSession()->pageTextContains('Content');
-
-    // Visit a ConditionalFields configuration page for Content bundles.
-    $this->drupalGet('admin/structure/conditional_fields/node');
-    $this->assertSession()->statusCodeEquals(200);
-
-    // Configuration page contains the `Article` bundle of Content entity type.
-    $this->assertSession()->pageTextContains('Article');
+  /**
+   * {@inheritdoc}
+   */
+  public function testVisibleChecked() {
+    $this->baseTestSteps();
 
     // Visit a ConditionalFields configuration page for `Article` Content type.
-    $this->createCondition('admin/structure/conditional_fields/node/article', 'body', 'field_' . $this->taxonomyName, 'visible', 'checked');
+    $this->createCondition('body', 'field_' . $this->taxonomyName, 'visible', 'checked');
 
     // Check if that configuration is saved.
     $this->drupalGet('admin/structure/conditional_fields/node/article');
@@ -207,34 +220,13 @@ class ConditionalFieldRadiosTest extends JavascriptTestBase {
   }
 
   /**
-   * Tests creating Conditional Field: inVisible if has any value from taxonomy.
+   * {@inheritdoc}
    */
-  public function testCreateConfigUnChecked() {
-    $user = $this->drupalCreateUser([
-      'administer nodes',
-      'view conditional fields',
-      'edit conditional fields',
-      'delete conditional fields',
-      'create article content',
-    ]);
-    $this->drupalLogin($user);
-
-    // Visit a ConditionalFields configuration page that requires login.
-    $this->drupalGet('admin/structure/conditional_fields');
-    $this->assertSession()->statusCodeEquals(200);
-
-    // Configuration page contains the `Content` entity type.
-    $this->assertSession()->pageTextContains('Content');
-
-    // Visit a ConditionalFields configuration page for Content bundles.
-    $this->drupalGet('admin/structure/conditional_fields/node');
-    $this->assertSession()->statusCodeEquals(200);
-
-    // Configuration page contains the `Article` bundle of Content entity type.
-    $this->assertSession()->pageTextContains('Article');
+  public function testVisibleUnchecked() {
+    $this->baseTestSteps();
 
     // Visit a ConditionalFields configuration page for `Article` Content type.
-    $this->createCondition('admin/structure/conditional_fields/node/article', 'body', 'field_' . $this->taxonomyName, 'visible', '!checked');
+    $this->createCondition('body', 'field_' . $this->taxonomyName, 'visible', '!checked');
 
     // Check if that configuration is saved.
     $this->drupalGet('admin/structure/conditional_fields/node/article');
@@ -257,36 +249,9 @@ class ConditionalFieldRadiosTest extends JavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
-    parent::setUp();
-    // Create a vocabulary with random name.
-    $this->taxonomyName = $this->getRandomGenerator()->word(8);
-    $vocabulary = Vocabulary::create([
-      'name' => $this->taxonomyName,
-      'vid' => $this->taxonomyName,
-    ]);
-    $vocabulary->save();
-    // Create a random taxonomy terms for vocabulary.
-    $this->termsCount = mt_rand(3, 5);
-    for ($i = 1; $i <= $this->termsCount; $i++) {
-      $termName = $this->getRandomGenerator()->word(8);
-      Term::create([
-        'parent' => [],
-        'name' => $termName,
-        'vid' => $this->taxonomyName,
-      ])->save();
-    }
-    // Add a custom field with taxonomy terms to 'Article'.
-    // The field label is a machine name of created vocabulary.
-    $handler_settings = [
-      'target_bundles' => [
-        $vocabulary->id() => $vocabulary->id(),
-      ],
-    ];
-    $this->createEntityReferenceField('node', 'article', 'field_' . $this->taxonomyName, $this->taxonomyName, 'taxonomy_term', 'default', $handler_settings);
-    entity_get_form_display('node', 'article', 'default')
-      ->setComponent('field_' . $this->taxonomyName, ['type' => 'options_buttons'])
-      ->save();
+  public function testInvisibleUnchecked() {
+    // TODO: Implement testInvisibleUnchecked() method.
+    $this->markTestIncomplete();
   }
 
 }

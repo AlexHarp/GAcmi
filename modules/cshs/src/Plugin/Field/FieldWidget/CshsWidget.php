@@ -56,8 +56,7 @@ class CshsWidget extends WidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $element['target_id'] = array_merge($element, $this->helperFormElement(), [
       '#label' => $this->fieldDefinition->getLabel(),
-      '#value_key' => 'target_id',
-      '#default_value' => isset($items[$delta]->target_id) ? $items[$delta]->target_id : '',
+      '#default_value' => $items->get($delta)->getValue(),
     ]);
 
     return $element;
