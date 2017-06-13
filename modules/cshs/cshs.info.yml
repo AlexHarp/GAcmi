@@ -1,0 +1,14 @@
+name: Client-side hierarchical select
+description: A simple client-side hierarchical select widget for taxonomy terms.
+package: Widgets
+type: module
+# core: 8.x
+
+dependencies:
+  - taxonomy
+
+# Information added by Drupal.org packaging script on 2017-04-18
+version: '8.x-1.0-beta3+2-dev'
+core: '8.x'
+project: 'cshs'
+datestamp: 1492519229

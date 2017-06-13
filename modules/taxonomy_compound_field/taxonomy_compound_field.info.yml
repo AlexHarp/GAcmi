@@ -1,0 +1,5 @@
+name: Taxonomy Compound Field
+type: module
+description: 'Adds a Taxonomy compound fields that refines a taxonomy term selection from a parented taxonomy volcabulary selection'
+core: 8.x
+package: Geoscience Australia

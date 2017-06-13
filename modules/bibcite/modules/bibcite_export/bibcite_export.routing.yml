@@ -1,0 +1,53 @@
+bibcite_export.export:
+  path: '/bibcite/export/{bibcite_format}/{entity_type}/{entity}'
+  defaults:
+    _controller: '\Drupal\bibcite_export\Controller\ExportController::export'
+    _title: 'BibCite Export'
+  requirements:
+    _permission: 'access bibcite export'
+  options:
+    parameters:
+      bibcite_format:
+        type: bibcite_format
+      entity:
+        type: entity:{entity_type}
+
+bibcite_export.export_multiple:
+  path: '/bibcite/export/{bibcite_format}/{entity_type}'
+  defaults:
+    _controller: '\Drupal\bibcite_export\Controller\ExportController::exportMultiple'
+    _title: 'BibCite Export'
+  requirements:
+    _permission: 'access bibcite export'
+  options:
+    parameters:
+      bibcite_format:
+        type: bibcite_format
+
+bibcite_export.settings:
+  path: '/admin/config/bibcite/settings/export'
+  defaults:
+    _form: '\Drupal\bibcite_export\Form\ExportSettingsForm'
+    _title: 'Export'
+  requirements:
+    _permission: 'administer bibcite'
+
+bibcite_export.export_all:
+  path: '/admin/config/bibcite/export'
+  defaults:
+    _form: '\Drupal\bibcite_export\Form\ExportAllForm'
+    _title: 'Export all references'
+  requirements:
+    _permission: 'administer bibcite'
+
+bibcite_export.download:
+  path: '/admin/config/bibcite/export/download/{file}'
+  defaults:
+    _controller: '\Drupal\bibcite_export\Controller\ExportDownload::download'
+    _title: 'Download export file'
+  requirements:
+    _custom_access: '\Drupal\bibcite_export\Access\DownloadFileAccess::access'
+  options:
+    parameters:
+      file:
+        type: entity:file

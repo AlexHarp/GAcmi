@@ -1,0 +1,9 @@
+services:
+  bibcite_entity.normalizer.reference:
+    class: Drupal\bibcite_entity\Normalizer\CslReferenceNormalizer
+    tags:
+      - { name: normalizer, priority: 30 }
+    arguments: ['@entity.manager', '@config.factory']
+  bibcite.ui_override_provider:
+    class: Drupal\bibcite_entity\UIOverrideProvider
+    arguments: ['@entity.manager', '@config.factory']

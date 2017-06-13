@@ -1,0 +1,141 @@
+<?php
+/**
+ * @file
+ * Module hook.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ * Add export links to the citation.
+ */
+function bibcite_export_preprocess_bibcite_citation(&$variables) {
+  $conf = \Drupal::config('bibcite_export.settings');
+
+  if ($conf->get('show_citation') && isset($variables['data']['#entity'])) {
+    /** @var \Drupal\bibcite_entity\Entity\ReferenceInterface $entity */
+    $entity = $variables['data']['#entity'];
+    foreach (bibcite_export_create_export_links($entity, array_flip($conf->get('enabled_formats'))) as $link) {
+      $variables['content']['links']['#items'][] = $link;
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ * Add export links to the table view of Reference entity.
+ */
+function bibcite_export_preprocess_bibcite_reference_table(&$variables) {
+  $conf = \Drupal::config('bibcite_export.settings');
+
+  if ($conf->get('show_full') && isset($variables['elements']['#bibcite_reference'])) {
+    /** @var \Drupal\bibcite_entity\Entity\ReferenceInterface $entity */
+    $entity = $variables['elements']['#bibcite_reference'];
+    foreach (bibcite_export_create_export_links($entity, array_flip($conf->get('enabled_formats'))) as $link) {
+      $variables['content']['links']['#items'][] = $link;
+    }
+  }
+}
+
+/**
+ * Create export links for entity.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   Entity for export.
+ * @param array $formats
+ *   Array of export formats.
+ *
+ * @return array
+ *   Array of export links.
+ */
+function bibcite_export_create_export_links(EntityInterface $entity, $formats) {
+  /** @var \Drupal\bibcite\Plugin\BibciteFormatManagerInterface $manager */
+  $manager = \Drupal::service('plugin.manager.bibcite_format');
+  $definitions = $manager->getExportDefinitions();
+
+  $definitions = array_intersect_key($definitions, $formats);
+
+  $links = [];
+  foreach ($definitions as $definition) {
+    $url = Url::fromRoute('bibcite_export.export', [
+      'bibcite_format' => $definition['id'],
+      'entity_type' => $entity->getEntityTypeId(),
+      'entity' => $entity->id(),
+    ]);
+
+    $links[] = Link::fromTextAndUrl((string) $definition['label'], $url)->toRenderable();
+  }
+
+  return $links;
+}
+
+/**
+ * Implements hook_modules_installed().
+ *
+ * Rebuild action plugins configuration.
+ */
+function bibcite_export_modules_installed($modules) {
+  _bibcite_export_rebuild_action_config();
+}
+
+/**
+ * Implements hook_modules_uninstalled().
+ *
+ * Delete action plugins configuration if format module has been uninstalled.
+ */
+function bibcite_export_modules_uninstalled($modules) {
+  /** @var \Drupal\Core\Config\ConfigFactoryInterface $config_factory */
+  $config_factory = \Drupal::service('config.factory');
+  $old_configs = $configs = $config_factory->listAll('system.action.bibcite_export_action');
+  $new_configs = _bibcite_export_rebuild_action_config();
+
+  foreach (array_diff($old_configs, $new_configs) as $deleted_named) {
+    $config_factory->getEditable($deleted_named)->delete();
+  }
+}
+
+/**
+ * Rebuild configuration for export action plugin.
+ *
+ * @todo Find a better way to set configuration for action plugin.
+ *
+ * @return array
+ *   List of created/updated configuration names.
+ */
+function _bibcite_export_rebuild_action_config() {
+  $config_names = [];
+
+  /** @var \Drupal\Core\Config\ConfigFactoryInterface $config_factory */
+  $config_factory = \Drupal::service('config.factory');
+  $formats = \Drupal::service('plugin.manager.bibcite_format')->getExportDefinitions();
+  $base_plugin_id = 'bibcite_export_action';
+
+  foreach ($formats as $format_info) {
+    $label = t('Export to @format', ['@format' => $format_info['label']]);
+
+    $plugin_name = sprintf('%s:%s', $base_plugin_id, $format_info['id']);
+    $config_name = sprintf('system.action.%s_%s', $base_plugin_id, $format_info['id']);
+
+    $config = $config_factory->getEditable($config_name);
+    $config->setData([
+      'id' => $plugin_name,
+      'label' => $label,
+      'status' => TRUE,
+      'plugin' => $plugin_name,
+      'type' => 'Reference',
+      'dependencies' => [
+        'module' => ['bibcite_export'],
+      ],
+    ]);
+    $config->save();
+
+    $config_names[] = $config->getName();
+  }
+
+  return $config_names;
+}

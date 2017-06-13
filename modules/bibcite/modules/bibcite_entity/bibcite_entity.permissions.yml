@@ -1,0 +1,59 @@
+# Reference
+administer bibcite_reference entities:
+  title: 'Administer Reference entities'
+  description: 'Allow to access the administration form to configure Reference entities.'
+  restrict access: true
+
+add bibcite_reference entities:
+  title: 'Create new Reference entities'
+
+delete own bibcite_reference entities:
+  title: 'Delete own Reference entities'
+
+delete all bibcite_reference entities:
+  title: 'Delete all Reference entities'
+
+edit own bibcite_reference entities:
+  title: 'Edit own Reference entities'
+
+edit all bibcite_reference entities:
+  title: 'Edit all Reference entities'
+
+view bibcite_reference entities:
+  title: 'View Reference entities'
+
+# Contributor
+administer contributor entities:
+  title: 'Administer Contributor entities'
+  description: 'Allow to access the administration form to configure Contributor entities.'
+  restrict access: true
+
+add contributor entities:
+  title: 'Create new Contributor entities'
+
+delete contributor entities:
+  title: 'Delete Contributor entities'
+
+edit contributor entities:
+  title: 'Edit Contributor entities'
+
+view contributor entities:
+  title: 'View Contributor entities'
+
+# Keyword
+administer keyword entities:
+  title: 'Administer Keyword entities'
+  description: 'Allow to access the administration form to configure Keyword entities.'
+  restrict access: true
+
+add keyword entities:
+  title: 'Create new Keyword entities'
+
+delete keyword entities:
+  title: 'Delete Keyword entities'
+
+edit keyword entities:
+  title: 'Edit Keyword entities'
+
+view keyword entities:
+  title: 'View Keyword entities'

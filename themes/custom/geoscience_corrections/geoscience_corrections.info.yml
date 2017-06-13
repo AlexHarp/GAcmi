@@ -1,6 +1,6 @@
 name: geoscience_corrections
 type: theme
-description: My Awesome theme
+description: Small adjustments for one of usecases
 package: Other
 core: 8.x
 libraries:
