@@ -46,7 +46,10 @@
 					</cit:CI_Citation>
 				</mcc:authority>
 				<mcc:code>
-					<gco:CharacterString>To be inserted</gco:CharacterString>
+					<gco:CharacterString>
+                 				<xsl:value-of
+							select="uuid/value" />
+					</gco:CharacterString>
 				</mcc:code>
 				<mcc:codeSpace>
 					<gco:CharacterString>urn:uuid</gco:CharacterString>
