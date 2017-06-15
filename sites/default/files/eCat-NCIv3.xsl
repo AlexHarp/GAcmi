@@ -225,9 +225,13 @@
 							</mcc:MD_Identifier>
 						</cit:identifier>
 						<xsl:apply-templates select="field_authors" />
-						<cit:citedResponsibleParty>
-							<xsl:apply-templates select="	field_contact" />
-						</cit:citedResponsibleParty>
+						<xsl:choose>
+							<xsl:when test="string(field_owner)">
+								<cit:citedResponsibleParty>
+									<xsl:apply-templates select="field_owner" />
+								</cit:citedResponsibleParty>
+							</xsl:when>
+						</xsl:choose>
 					</cit:CI_Citation>
 				</mri:citation>
 
@@ -235,7 +239,7 @@
 
 				<!-- Contacts -->
 				<mri:pointOfContact>
-					<xsl:apply-templates select="field_contact" />
+					<xsl:apply-templates select="field_owner" />
 				</mri:pointOfContact>
 				<mri:pointOfContact>
 					<xsl:apply-templates select="field_custodian" />
@@ -286,32 +290,60 @@
 						</gex:description>
 						<gex:geographicElement>
 							<gex:EX_GeographicBoundingBox>
-								<gex:westBoundLongitude>
-									<gco:Decimal>
-										<xsl:value-of select="field_schema/field_minimum_x_value" />
-									</gco:Decimal>
-								</gex:westBoundLongitude>
-								<gex:eastBoundLongitude>
-									<gco:Decimal>
-										<xsl:value-of select="field_schema/field_maximum_x_value" />
-									</gco:Decimal>
-								</gex:eastBoundLongitude>
-								<gex:southBoundLatitude>
-									<gco:Decimal>
-										<xsl:value-of select="field_schema/field_minimum_y_value" />
-									</gco:Decimal>
-								</gex:southBoundLatitude>
-								<gex:northBoundLatitude>
-									<gco:Decimal>
-										<xsl:value-of select="field_schema/field_maximum_y_value" />
-									</gco:Decimal>
-								</gex:northBoundLatitude>
+								<xsl:choose>
+									<xsl:when test="string(field_schema/field_minimum_x_value)">
+										<gex:westBoundLongitude>
+											<gco:Decimal>
+												<xsl:value-of select="field_schema/field_minimum_x_value" />
+											</gco:Decimal>
+										</gex:westBoundLongitude>
+										<gex:eastBoundLongitude>
+											<gco:Decimal>
+												<xsl:value-of select="field_schema/field_maximum_x_value" />
+											</gco:Decimal>
+										</gex:eastBoundLongitude>
+										<gex:southBoundLatitude>
+											<gco:Decimal>
+												<xsl:value-of select="field_schema/field_minimum_y_value" />
+											</gco:Decimal>
+										</gex:southBoundLatitude>
+										<gex:northBoundLatitude>
+											<gco:Decimal>
+												<xsl:value-of select="field_schema/field_maximum_y_value" />
+											</gco:Decimal>
+										</gex:northBoundLatitude>
+ 									</xsl:when>
+									<xsl:otherwise>
+										<gex:westBoundLongitude>
+											<gco:Decimal>
+												-90
+											</gco:Decimal>
+										</gex:westBoundLongitude>
+										<gex:eastBoundLongitude>
+											<gco:Decimal>
+												90
+											</gco:Decimal>
+										</gex:eastBoundLongitude>
+										<gex:southBoundLatitude>
+											<gco:Decimal>
+												-90
+											</gco:Decimal>
+										</gex:southBoundLatitude>
+										<gex:northBoundLatitude>
+											<gco:Decimal>
+												90
+											</gco:Decimal>
+										</gex:northBoundLatitude>
+									</xsl:otherwise>
+								</xsl:choose>
 							</gex:EX_GeographicBoundingBox>
 						</gex:geographicElement>
 						<gex:temporalElement>
 							<gex:EX_TemporalExtent>
 								<gex:extent>
-									<gml:TimePeriod>
+									<xsl:variable name="uuid"
+										select="string(uuid/value)" />
+									<gml:TimePeriod gml:id="{$uuid}">
 										<gml:beginPosition>
 											<xsl:value-of
 												select="format-dateTime(current-dateTime(), '[Y0001]-[M01]-[D01]')" />
@@ -427,7 +459,7 @@
 		</mdb:identificationInfo>
 
 		<!-- Distribution format -->
-		<mdb:distributionInfo>
+<!--		<mdb:distributionInfo>
 			<mrd:MD_Distribution>
 				<mrd:distributionFormat>
 					<mrd:MD_Format>
@@ -463,8 +495,8 @@
 							<mrd:MD_Distributor>
 								<mrd:distributorContact>
 
-									<!-- Take a closer look - this is probably the distributor of the 
-										format -->
+									<! Take a closer look - this is probably the distributor of the 
+										format 
 
 									<xsl:apply-templates select="field_distribution_entity" />
 
@@ -475,9 +507,9 @@
 				</mrd:distributionFormat>
 			</mrd:MD_Distribution>
 		</mdb:distributionInfo>
-
+-->
 		<!-- Lineage details -->
-		<mdb:resourceLineage>
+	<mdb:resourceLineage>
 			<mrl:LI_Lineage>
 				<mrl:statement>
 					<gco:CharacterString>
@@ -527,7 +559,7 @@
 	</xsl:template>
 
 	<!-- Owner parsing -->
-	<xsl:template match="field_contact">
+	<xsl:template match="field_owner">
 		<cit:CI_Responsibility>
 			<cit:role>
 				<cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode"
@@ -535,7 +567,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'organization']" mode="organisation" />
 				</cit:CI_Organisation>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -550,7 +582,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'organization']" mode="organisation" />
 				</cit:CI_Organisation>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -565,7 +597,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation"/>
+					<xsl:apply-templates select=".[type/target_id = 'organization']" mode="organisation"/>
 				</cit:CI_Organisation>
 			</cit:party>
 		</cit:CI_Responsibility>
@@ -580,7 +612,7 @@
 			<cit:party>
 				<cit:CI_Organisation>
 			<!--		<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" /> -->
-					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'organization']" mode="organisation" />
 				</cit:CI_Organisation>
 			</cit:party> 
 		</cit:CI_Responsibility>
@@ -594,7 +626,7 @@
 			</cit:role>
 			<cit:party>
 				<cit:CI_Organisation>
-					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'organization']" mode="organisation" />
 				<!--	<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" /> -->
 				</cit:CI_Organisation>
 			</cit:party>
@@ -643,13 +675,13 @@
 		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template match=".[type/target_id = 'contact']" mode="organisation" >
-<!--    	    <xsl:variable name="name"
-			select="field_contact_name/value" />
+	<xsl:template match=".[type/target_id = 'organization']" mode="organisation" >
+    	    <xsl:variable name="name"
+		select="field_contact_name/value" />
 		<xsl:variable name="role"
 			select="field_role" />
--->		<xsl:choose>
-			<xsl:when test="not(string(field_contact_name/value))">
+		<xsl:choose>
+			<xsl:when test="not(string($name))">
 				<cit:name>
 					<gco:CharacterString>
 					  <xsl:value-of select="title/value" />
@@ -659,17 +691,122 @@
 			<xsl:otherwise>
 				<cit:name>
 					<gco:CharacterString>
-                                <xsl:value-of select="field_contact_name/value" />
+                                <xsl:value-of select="$name" />
                             </gco:CharacterString>
 				</cit:name>
 			</xsl:otherwise>
 		</xsl:choose>
-		<xsl:apply-templates select="field_organization" />
-		<xsl:if test="string(field_role)">
+		<!-- find a better way to do this other than just copy field organisation template -->
+		<cit:contactInfo>
+			<cit:CI_Contact>
+				<cit:phone>
+					<cit:CI_Telephone>
+						<xsl:choose>
+							<xsl:when test="not(string(field_telephone))">
+								<cit:number gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:number>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:number>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="field_telephone" />
+                            </gco:CharacterString>
+								</cit:number>
+							</xsl:otherwise>
+						</xsl:choose>
+						<cit:numberType>
+							<cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode"
+								codeListValue="voice" />
+						</cit:numberType>
+					</cit:CI_Telephone>
+				</cit:phone>
+				<cit:address>
+					<cit:CI_Address>
+						<xsl:choose>
+							<xsl:when test="not(string(field_address/streetAddress))">
+								<cit:deliveryPoint gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:deliveryPoint>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:deliveryPoint>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="field_address/streetAddress" />
+                            </gco:CharacterString>
+								</cit:deliveryPoint>
+							</xsl:otherwise>
+						</xsl:choose>
+						<xsl:choose>
+							<xsl:when
+								test="not(string(field_address/addressLocality))">
+								<cit:city gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:city>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:city>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="normalize-space(field_address/addressLocality)" />
+                            </gco:CharacterString>
+								</cit:city>
+							</xsl:otherwise>
+						</xsl:choose>
+						<xsl:choose>
+							<xsl:when
+								test="not(string(field_address/addressRegion ))">
+								<cit:administrativeArea gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:administrativeArea>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:administrativeArea>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="normalize-space(field_address/addressRegion)" />
+                            </gco:CharacterString>
+								</cit:administrativeArea>
+							</xsl:otherwise>
+						</xsl:choose>
+						<cit:postalCode>
+							<gco:CharacterString>
+								<xsl:value-of select="field_address/postalCode" />
+							</gco:CharacterString>
+						</cit:postalCode>
+						<cit:country>
+							<gco:CharacterString>
+								<xsl:value-of select="field_address/addressCountry" />
+							</gco:CharacterString>
+						</cit:country>
+						<xsl:choose>
+							<xsl:when
+								test=" not(field_email) or not(string(field_email = ''))">
+								<cit:electronicMailAddress
+									gco:nilReason="missing">
+									<gco:CharacterString />
+								</cit:electronicMailAddress>
+							</xsl:when>
+							<xsl:otherwise>
+								<cit:electronicMailAddress>
+									<gco:CharacterString>
+                                <xsl:value-of
+										select="field_email" />
+                            </gco:CharacterString>
+								</cit:electronicMailAddress>
+							</xsl:otherwise>
+						</xsl:choose>
+					</cit:CI_Address>
+				</cit:address>
+			</cit:CI_Contact>
+		</cit:contactInfo>
+		<xsl:if test="string($role)">
 			<cit:individual>
 				<cit:CI_Individual>
 					<cit:positionName>
-						<gco:CharacterString><xsl:value-of select="field_role" /></gco:CharacterString>
+						<gco:CharacterString><xsl:value-of select="$role" /></gco:CharacterString>
 					</cit:positionName>
 				</cit:CI_Individual>
 			</cit:individual>
@@ -1170,34 +1307,38 @@
 	</xsl:template>
 
 	<xsl:template match="field_authors">
-		<cit:citedResponsibleParty>
-			<cit:CI_Responsibility>
-				<cit:role>
-					<cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode"
-						codeListValue="author">author</cit:CI_RoleCode>
-				</cit:role>
-				<cit:party>
-					<cit:CI_Individual>
-						<cit:name>
-							<gco:CharacterString>
-								<xsl:value-of select="." />
-							</gco:CharacterString>
-						</cit:name>
-						<cit:contactInfo>
-							<cit:CI_Contact>
-								<cit:contactInstructions>
-									<gco:CharacterString />
-								</cit:contactInstructions>
-							</cit:CI_Contact>
-						</cit:contactInfo>
-					</cit:CI_Individual>
-				</cit:party>
-			</cit:CI_Responsibility>
-		</cit:citedResponsibleParty>
+		<xsl:choose>
+                	<xsl:when test="string(field_authors)">
+				<cit:citedResponsibleParty>
+					<cit:CI_Responsibility>
+						<cit:role>
+							<cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode"
+								codeListValue="author">author</cit:CI_RoleCode>
+						</cit:role>
+						<cit:party>
+							<cit:CI_Individual>
+								<cit:name>
+									<gco:CharacterString>
+										<xsl:value-of select="field_authors" />
+									</gco:CharacterString>
+								</cit:name>
+								<cit:contactInfo>
+									<cit:CI_Contact>
+										<cit:contactInstructions>
+											<gco:CharacterString />
+										</cit:contactInstructions>
+									</cit:CI_Contact>
+								</cit:contactInfo>
+							</cit:CI_Individual>
+						</cit:party>
+					</cit:CI_Responsibility>
+				</cit:citedResponsibleParty>
+			</xsl:when>
+		</xsl:choose>
 	</xsl:template>
 
-	<xsl:function name="util:strip-tags">
-		<xsl:param name="text" />
+<xsl:function name="util:strip-tags">
+	<xsl:param name="text" />
 		<xsl:choose>
 			<xsl:when test="contains($text, '&lt;')">
 				<xsl:value-of
