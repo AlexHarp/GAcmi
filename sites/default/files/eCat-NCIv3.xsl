@@ -612,7 +612,7 @@
 			<cit:party>
 				<cit:CI_Organisation>
 			<!--		<xsl:apply-templates select=".//div[@class='content clearfix']" mode="organisation" /> -->
-					<xsl:apply-templates select=".[type/target_id = 'organization']" mode="organisation" />
+					<xsl:apply-templates select=".[type/target_id = 'contact']" mode="organisation" />
 				</cit:CI_Organisation>
 			</cit:party> 
 		</cit:CI_Responsibility>
@@ -673,6 +673,49 @@
 				</cit:positionName>
 			</xsl:otherwise>
 		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template match=".[type/target_id = 'contact']" mode="organisation" >
+		<xsl:variable name="name"
+			select="field_contact_name/value" />
+		<xsl:variable name="role"
+			select="field_role" />
+
+		<xsl:choose>
+			<xsl:when test="not(string($name))">
+				<cit:name>
+					<gco:CharacterString>
+					  <xsl:value-of select="title/value" />
+					</gco:CharacterString>
+				</cit:name>
+			</xsl:when>
+			<xsl:otherwise>
+				<cit:name>
+					<gco:CharacterString>
+                                <xsl:value-of select="$name" />
+                            </gco:CharacterString>
+				</cit:name>
+			</xsl:otherwise>
+		</xsl:choose>
+		<xsl:apply-templates select="field_organization" />
+		<cit:individual>
+			<cit:CI_Individual>
+				<xsl:choose>
+					<xsl:when test="not(string($role))">
+						<cit:positionName gco:nilReason="missing">
+							<gco:CharacterString />
+						</cit:positionName>
+					</xsl:when>
+					<xsl:otherwise>
+						<cit:positionName>
+							<gco:CharacterString>
+								<xsl:value-of select="$role" />      
+			     			 	</gco:CharacterString>
+						</cit:positionName>
+					</xsl:otherwise>
+				</xsl:choose>
+			</cit:CI_Individual>
+		</cit:individual>
 	</xsl:template>
 
 	<xsl:template match=".[type/target_id = 'organization']" mode="organisation" >
