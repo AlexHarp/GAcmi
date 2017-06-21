@@ -71,7 +71,7 @@ class TablefieldFormatter extends FormatterBase {
         $render_array = [];
 
         // If the user has access to the csv export option, display it now.
-        if ($field_settings['export'] && \Drupal::currentUser()->hasPermission('export tablefield')) {
+        if ($field_settings['export'] && $entity_id && \Drupal::currentUser()->hasPermission('export tablefield')) {
 
           $route_params = [
             'entity_type' => $entity_type,

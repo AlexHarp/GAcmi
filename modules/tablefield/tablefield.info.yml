@@ -10,8 +10,8 @@ dependencies:
 
 configure: tablefield.admin
 
-# Information added by Drupal.org packaging script on 2017-05-28
-version: '8.x-2.x-dev'
+# Information added by Drupal.org packaging script on 2017-06-13
+version: '8.x-2.0-alpha1'
 core: '8.x'
 project: 'tablefield'
-datestamp: 1495969686
+datestamp: 1497343144
