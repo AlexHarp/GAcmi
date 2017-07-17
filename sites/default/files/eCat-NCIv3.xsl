@@ -235,7 +235,7 @@
 					</cit:CI_Citation>
 				</mri:citation>
 
-				<xsl:apply-templates select="field_overview/value" />
+				<xsl:apply-templates select="field_summary/value" />
 
 				<!-- Contacts -->
 				<mri:pointOfContact>
@@ -548,7 +548,7 @@
 	</xsl:template>
 
 	<!-- Abstract parsing -->
-	<xsl:template match="field_overview/value">
+	<xsl:template match="field_summary/value">
 		<mri:abstract>
 			<xsl:variable name="abs" select="." />
 			<gco:CharacterString>
@@ -668,8 +668,8 @@
 			<xsl:otherwise>
 				<cit:positionName>
 					<gco:CharacterString>
-            <xsl:value-of select="$role" />      
-              </gco:CharacterString>
+            					<xsl:value-of select="$role" />      
+        		      		</gco:CharacterString>
 				</cit:positionName>
 			</xsl:otherwise>
 		</xsl:choose>
@@ -1355,8 +1355,7 @@
 				<cit:citedResponsibleParty>
 					<cit:CI_Responsibility>
 						<cit:role>
-							<cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode"
-								codeListValue="author">author</cit:CI_RoleCode>
+							<cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="author">author</cit:CI_RoleCode>
 						</cit:role>
 						<cit:party>
 							<cit:CI_Individual>
