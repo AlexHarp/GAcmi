@@ -198,7 +198,9 @@
 							</cit:CI_Date>
 						</cit:date>
 						<cit:edition>
-							<gco:CharacterString>1</gco:CharacterString>
+							<gco:CharacterString>
+								<xsl:value-of select="field_version_number" />
+							</gco:CharacterString>
 						</cit:edition>
 						<cit:identifier>
 							<mcc:MD_Identifier>
