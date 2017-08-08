@@ -1,7 +1,0 @@
-default:
-  - streetAddress
-  - addressLocality
-  - addressRegion
-  - postOfficeBoxNumber
-  - postalCode
-  - addressCountry

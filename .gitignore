@@ -1,2 +1,5 @@
 jet_err_*
 core/*
+modules/*
+sites/default/files/*
+vendor/*
