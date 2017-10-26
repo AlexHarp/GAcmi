@@ -13,8 +13,8 @@ modulelst=`more singleLn.txt`
 #database
 #drush -y sql-drop
 #`drush sql-connect` < $filename.sql
-drush -y en --resolve-dependencies $modulelst 
-drush cr
 cd ../
+vendor/bin/drush -y en --resolve-dependencies $modulelst 
+vendor/bin/drush cr
 sudo rm -Rf $filename
 echo "Complete"

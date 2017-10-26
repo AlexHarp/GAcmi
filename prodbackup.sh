@@ -5,9 +5,9 @@ FILENAME=prod$DATE
 cd /var/www/html
 mkdir $FILENAME
 cd $FILENAME
-drush sql-dump > $FILENAME".sql"
+../vendor/bin/drush sql-dump > $FILENAME".sql"
 ##modules
-drush pm-list --type=module --status=enabled --pipe > modules.txt
+../vendor/bin/drush pm-list --type=module --status=enabled --pipe > modules.txt
 ##files
 cp -R ../sites/default/files .
 cd ../

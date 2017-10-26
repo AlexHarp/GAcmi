@@ -3,3 +3,4 @@ core/*
 modules/*
 sites/default/files/*
 vendor/*
+backups/*
