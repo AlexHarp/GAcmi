@@ -6,10 +6,12 @@
     "require": {
         "composer/installers": "^1.0.24",
         "wikimedia/composer-merge-plugin": "^1.4",
-        "drush/drush": "^8.1"
+        "mikehaertl/phpwkhtmltopdf": "~2.1",
+        "drupal/core": "^8.5",
+        "drush/drush": "^9.0",
+        "drupal/console": "^1.7"
     },
     "replace": {
-        "drupal/core": "^8.4"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

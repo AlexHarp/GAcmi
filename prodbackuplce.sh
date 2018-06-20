@@ -1,13 +1,12 @@
 ##database
-export PATH="/home/ec2-user/.composer/vendor/bin:$PATH"
 DATE=`date +%Y-%m-%d`
 FILENAME=prod$DATE
 cd /var/www/html
 mkdir $FILENAME
 cd $FILENAME
-../vendor/bin/drush sql-dump > $FILENAME".sql"
+drush sql-dump > $FILENAME".sql"
 ##modules
-../vendor/bin/drush pm-list --type=module --status=enabled --pipe > modules.txt
+drush pm-list --type=module --status=enabled --pipe > modules.txt
 ##files
 cp -R ../sites/default/files .
 cd ../

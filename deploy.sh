@@ -7,14 +7,17 @@ cd $filename
 sudo rm -Rf ../sites/default/files/
 sudo mv -f files ../sites/default
 chmod -R 774 ../sites/default/files
+chown -R apache:apache ../sites/default/files/
 #modules
 echo $(cat modules.txt) > singleLn.txt
 modulelst=`more singleLn.txt`
+../vendor/bin/drush -y en --resolve-dependencies $modulelst 
 #database
-#drush -y sql-drop
-#`drush sql-connect` < $filename.sql
+echo 'database drop'
+../vendor/bin/drush -y sql-drop
+echo 'datase base import'
+`../vendor/bin/drush sql-connect` < $filename.sql
 cd ../
-vendor/bin/drush -y en --resolve-dependencies $modulelst 
 vendor/bin/drush cr
-sudo rm -Rf $filename
+#sudo rm -Rf $filename
 echo "Complete"
